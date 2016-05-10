@@ -122,32 +122,45 @@
 
  #Set Up Disk Encryption of VM's 
  Try {
-  $KeyVault = Get-AzureRmKeyVault -vaultname $KeyVaultName -resourcegroup $resourceGroupName -ErrorAction Stop
-  Write-Output "Using Existing KeyVault."
-  
-  Try {
-   $ADApplication = Get-AzureRmADApplication -IdentifierUri $ADApplicationHomePage -ErrorAction Stop
-   Write-Output "Using Existing AAD Application."
-  } Catch {
-   Write-Output "Creating new AAD Application."
-   $now = [System.DateTime]::Now
-   $oneYearFromNow = $now.AddYears(1)
-   $aadClientSecret = [Guid]::NewGuid()
-   $ADApplication = New-AzureRMADApplication -DisplayName $ADApplicationDisplayName -homepage $ADApplicationHomePage  -IdentifierUris $ADApplicationHomePage -StartDate $now -EndDate $oneYearFromNow -Password $aadClientSecret -ErrorAction Stop
-   New-AzureRmADServicePrincipal -ApplicationId $ADApplication.applicationid
-  }
-  $aadClientID = $ADApplication.applicationid
-  
-  Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -serviceprincipalname $aadClientID -PermissionsToSecrets all -PermissionsToKeys all 
-  Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -enabledfordiskencryption
-
-  $DiskEncryptionVaultUrl = $KeyVault.vaulturi
-  $KeyVaultResourceId = $KeyVault.resourceid
- 
+	  $KeyVault = Get-AzureRmKeyVault -vaultname $KeyVaultName -resourcegroup $resourceGroupName -ErrorAction Stop
+	  Write-Output "Using Existing KeyVault."
+      $DiskEncryptionVaultUrl = $KeyVault.vaulturi
+	  $KeyVaultResourceId = $KeyVault.resourceid
  } Catch {
-  Write-Output "No  KeyVault Found - not encrypting any disks."
- }
+	 
+	 	Write-Output "Making New KeyVault."
+		$KeyVault = New-AzureRmKeyVault -vaultname $KeyVaultName -location $location -Sku standard -EnabledForDiskEncryption -ResourceGroupName $resourceGroupName  -ErrorAction Stop
+		Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -serviceprincipalname $aadClientID -PermissionsToSecrets all -PermissionsToKeys all
+		Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -enabledfordiskencryption
+		
+		$DiskEncryptionVaultUrl = $KeyVault.vaulturi
+		$KeyVaultResourceId = $KeyVault.resourceid
 
+		$KeyEncryptionKeyName = $randomName
+		$kek = add-azurekeyvaultkey -vaultname $KeyVaultName -name $KeyEncryptionKeyName -destination 'software'
+		$KeyEncryptionKeyUrl = $kek.key.kid
+ }
+ 
+ if($DiskEncryptionVaultUrl) {
+	 		
+		Try {
+		   $ADApplication = Get-AzureRmADApplication -IdentifierUri $ADApplicationHomePage -ErrorAction Stop
+		   Write-Output "Using Existing AAD Application."
+	    } Catch {
+		   Write-Output "Creating new AAD Application."
+		   $now = [System.DateTime]::Now
+		   $oneYearFromNow = $now.AddYears(1)
+		   $aadClientSecret = [Guid]::NewGuid()
+		   $ADApplication = New-AzureRMADApplication -DisplayName $ADApplicationDisplayName -homepage $ADApplicationHomePage  -IdentifierUris $ADApplicationHomePage -StartDate $now -EndDate $oneYearFromNow -Password $aadClientSecret -ErrorAction Stop
+		   New-AzureRmADServicePrincipal -ApplicationId $ADApplication.applicationid
+	    }
+		
+		$aadClientID = $ADApplication.applicationid
+		  
+		Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -serviceprincipalname $aadClientID -PermissionsToSecrets all -PermissionsToKeys all 
+		Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -enabledfordiskencryption
+ }
+ 
  # Create Storage Account. Note: If disk Encryption desired - cannot use Premium Storage.
  Try {
   $VMDiskStorageAccount = Get-AzureRmStorageAccount  -Name $VMDiskStorageAccountName -ResourceGroupName $resourceGroupName -ErrorAction Stop
