@@ -7,6 +7,9 @@ param (
 
         [parameter(Mandatory=$false)]
         [String]$randomName,
+		
+		[parameter(Mandatory=$false)]
+        [bool]$createGateway = $false,
 
         [parameter(Mandatory=$false)]
         [System.Collections.ArrayList]$Tags
@@ -105,12 +108,13 @@ New-AzureRmVirtualNetwork -Name $vnetName -ResourceGroupName $resourceGroupName 
 $vnet = Get-AzureRmVirtualNetwork -ResourceGroupName $resourceGroupName -Name $vnetName
 $GatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name "GatewaySubnet" -VirtualNetwork $vnet -ErrorAction Stop
 
-#Create a point to site Gateway
-Write-Output "Creating Gateway."
-#Create Public IP Address for Gateway
-$GatewayPiP = New-AzureRmPublicIpAddress -Name $GWPublicIpAddressName -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Dynamic -DomainNameLabel $GWDNSName -Tag $Tags 
-$ipconf = New-AzureRmVirtualNetworkGatewayIpConfig -Name $GWIPconfName -Subnet $GatewaySubnet -PublicIpAddress $GatewayPiP -ErrorAction Stop
-
-New-AzureRmVirtualNetworkGateway -Name $GWName -ResourceGroupName $resourceGroupName -Location $location -IpConfigurations $ipconf -GatewayType Vpn -VpnType RouteBased -EnableBgp $false -GatewaySku Basic -Tag $Tags -ErrorAction Stop
-
+If($createGateway) {
+	#Create a Gateway
+	Write-Output "Creating Gateway."
+	#Create Public IP Address for Gateway
+	$GatewayPiP = New-AzureRmPublicIpAddress -Name $GWPublicIpAddressName -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Dynamic -DomainNameLabel $GWDNSName -Tag $Tags 
+	$ipconf = New-AzureRmVirtualNetworkGatewayIpConfig -Name $GWIPconfName -Subnet $GatewaySubnet -PublicIpAddress $GatewayPiP -ErrorAction Stop
+	
+	New-AzureRmVirtualNetworkGateway -Name $GWName -ResourceGroupName $resourceGroupName -Location $location -IpConfigurations $ipconf -GatewayType Vpn -VpnType RouteBased -EnableBgp $false -GatewaySku Basic -Tag $Tags -ErrorAction Stop
+}
 Write-Output "Create-VNet-And-Gateway Runbook has completed."
