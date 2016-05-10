@@ -68,10 +68,10 @@ $DiagnosticsStorageAccountName = $GWDNSName + "diags"
 $GWPublicIpAddressName = $GWName + "-PublicIP"
 
 #Create Some Rules...
-$FrontEnd_HTTP_rule = New-AzureRmNetworkSecurityRuleConfig -Name frontend-rule -Access Allow -Protocol Tcp -Direction Inbound -Priority 100 -SourceAddressPrefix $VPNClientAddressPool -SourcePortRange * -DestinationAddressPrefix $FrontEndAddressPrefix -DestinationPortRange 80  -ErrorAction Stop
+$FrontEnd_HTTP_rule = New-AzureRmNetworkSecurityRuleConfig -Name frontend-rule -Access Allow -Protocol Tcp -Direction Inbound -Priority 100 -SourceAddressPrefix "VirtualNetwork" -SourcePortRange * -DestinationAddressPrefix $FrontEndAddressPrefix -DestinationPortRange 80  -ErrorAction Stop
 $MiddleTier_HTTP_rule = New-AzureRmNetworkSecurityRuleConfig -Name middletier-rule -Access Allow -Protocol Tcp -Direction Inbound -Priority 100 -SourceAddressPrefix $FrontEndAddressPrefix -SourcePortRange * -DestinationAddressPrefix $MiddleTierAddressPrefix -DestinationPortRange 80 -ErrorAction Stop
 $Backend_DB_Rule = New-AzureRmNetworkSecurityRuleConfig -Name backtier-rule -Access Allow -Protocol Tcp -Direction Inbound -Priority 103 -SourceAddressPrefix $MiddleTierAddressPrefix -SourcePortRange * -DestinationAddressPrefix $BackEndAddressPrefix -DestinationPortRange 1433 -ErrorAction Stop
-$RDPFromVPNClientsRule = New-AzureRmNetworkSecurityRuleConfig -Name rdp-rule -Access Allow -Protocol Tcp -Direction Inbound -Priority 200 -SourceAddressPrefix $VPNClientAddressPool -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -ErrorAction Stop
+$RDPFromVPNClientsRule = New-AzureRmNetworkSecurityRuleConfig -Name rdp-rule -Access Allow -Protocol Tcp -Direction Inbound -Priority 200 -SourceAddressPrefix "VirtualNetwork" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -ErrorAction Stop
 $BlockVnetInBound = New-AzureRmNetworkSecurityRuleConfig -Name blockVnets-rule -Access Deny -Protocol * -Direction Inbound -Priority 1000 -SourceAddressPrefix "VirtualNetwork" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange * -ErrorAction Stop
 
 # Build the Network Security Groups...
