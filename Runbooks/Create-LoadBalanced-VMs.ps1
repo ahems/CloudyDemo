@@ -19,7 +19,7 @@
  Write-Output "Random Name: $randomName"
  
  if(!$resourceGroupName) { $resourceGroupName = $randomName }
- if(!$VnetResourceGroupName) { $VnetResourceGroupName = $randomName } 
+ if(!$VnetResourceGroupName) { $VnetResourceGroupName = $resourceGroupName } 
  if(!$VnetName) { $VnetName = $VnetResourceGroupName + "-Network" }
  $location = Get-AutomationVariable -Name 'Location' -ErrorAction Stop
  $subscriptionId = Get-AutomationVariable -Name 'SubscriptionId' -ErrorAction Stop
@@ -29,7 +29,7 @@
  $VMCredential = Get-AutomationPSCredential -Name 'VMAdmin' -ErrorAction Stop
  $HowManyVMs = Get-AutomationVariable -Name 'VMCount' -ErrorAction Stop
  $Environment = Get-AutomationVariable -Name 'Environment' -ErrorAction Stop
- $Conn = Get-AutomationConnection -Name "AzureRunAsConnection" -ErrorAction Stop
+ $AutomationConnection = Get-AutomationConnection -Name "AzureRunAsConnection" -ErrorAction Stop
  Try {
 	 $OMSWorkspaceId= Get-AutomationVariable -Name 'OMSWorkspaceId' -ErrorAction Stop
 	 $OMSWorkspaceKey= Get-AutomationVariable -Name 'OMSWorkspaceKey' -ErrorAction Stop
@@ -46,8 +46,9 @@
  $KeyVaultName = $randomName + "-Vault"
  $ADApplicationDisplayName = $randomName + "-Application"
  $ADApplicationHomePage = "http://" + $randomName
- $AntimalwareSettingsString = ‘{ "AntimalwareEnabled": true,"RealtimeProtectionEnabled": true}’;
+ $AntimalwareSettingsString = '{ "AntimalwareEnabled": true,"RealtimeProtectionEnabled": true}';
  $OperationalInsightsWorkspaceName = $randomName + "-OpInsights"
+ $EncryptionKeyName = $randomName + "-DiskEncryptionKey"
   
  # Build Tags to label our resources
  $Tags = New-Object System.Collections.ArrayList;
@@ -56,12 +57,12 @@
  $Tags.Add(@{ Name="auto-name"; Value=$randomName })
  
  # Log in...
- Add-AzureRMAccount -ServicePrincipal -Tenant $Conn.TenantID -ApplicationId $Conn.ApplicationID -CertificateThumbprint $Conn.CertificateThumbprint -ErrorAction Stop
+ Add-AzureRMAccount -ServicePrincipal -Tenant $AutomationConnection.TenantID -ApplicationId $AutomationConnection.ApplicationID -CertificateThumbprint $AutomationConnection.CertificateThumbprint -ErrorAction Stop | Write-Verbose 
  Select-AzureRmSubscription -SubscriptionId $subscriptionId
  
  # setup anti-malware
  $allAntimalwareVersions = (Get-AzureRmVMExtensionImage -Location $location -PublisherName "Microsoft.Azure.Security" -Type "IaaSAntimalware").Version
- $AntimalwareTypeHandlerVersions = $allAntimalwareVersions[($allAntimalwareVersions.count)–1]
+ $AntimalwareTypeHandlerVersions = $allAntimalwareVersions[($allAntimalwareVersions.count)-1]
  $AntimalwareTypeHandlerMajorAndMinorVersions = $AntimalwareTypeHandlerVersions.split(".")
  $AntimalwareTypeHandlerMajorAndMinorVersions = $AntimalwareTypeHandlerMajorAndMinorVersions[0] + "." + $AntimalwareTypeHandlerMajorAndMinorVersions[1]
  
@@ -121,53 +122,38 @@
  }
 
  #Set Up Disk Encryption of VM's 
- Try {
+ Try {     
 	  $KeyVault = Get-AzureRmKeyVault -vaultname $KeyVaultName -resourcegroup $resourceGroupName -ErrorAction Stop
 	  Write-Output "Using Existing KeyVault."
-      $DiskEncryptionVaultUrl = $KeyVault.vaulturi
-	  $KeyVaultResourceId = $KeyVault.resourceid
- } Catch {
+} Catch {
 	 
 	 	Write-Output "Making New KeyVault."
 		$KeyVault = New-AzureRmKeyVault -vaultname $KeyVaultName -location $location -Sku standard -EnabledForDiskEncryption -ResourceGroupName $resourceGroupName  -ErrorAction Stop
-		Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -serviceprincipalname $aadClientID -PermissionsToSecrets all -PermissionsToKeys all
+		Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -serviceprincipalname $AutomationConnection.ApplicationID -PermissionsToSecrets all -PermissionsToKeys all 
 		Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -enabledfordiskencryption
-		
-		$DiskEncryptionVaultUrl = $KeyVault.vaulturi
-		$KeyVaultResourceId = $KeyVault.resourceid
+}
+$DiskEncryptionVaultUrl = $KeyVault.vaulturi
+$KeyVaultResourceId = $KeyVault.resourceid
 
-		$KeyEncryptionKeyName = $randomName
-		$kek = add-azurekeyvaultkey -vaultname $KeyVaultName -name $KeyEncryptionKeyName -destination 'software'
-		$KeyEncryptionKeyUrl = $kek.key.kid
- }
- 
- if($DiskEncryptionVaultUrl) {
-	 		
-		Try {
-		   $ADApplication = Get-AzureRmADApplication -IdentifierUri $ADApplicationHomePage -ErrorAction Stop
-		   Write-Output "Using Existing AAD Application."
-	    } Catch {
-		   Write-Output "Creating new AAD Application."
-		   $now = [System.DateTime]::Now
-		   $oneYearFromNow = $now.AddYears(1)
-		   $aadClientSecret = [Guid]::NewGuid()
-		   $ADApplication = New-AzureRMADApplication -DisplayName $ADApplicationDisplayName -homepage $ADApplicationHomePage  -IdentifierUris $ADApplicationHomePage -StartDate $now -EndDate $oneYearFromNow -Password $aadClientSecret -ErrorAction Stop
-		   New-AzureRmADServicePrincipal -ApplicationId $ADApplication.applicationid
-	    }
-		
-		$aadClientID = $ADApplication.applicationid
-		  
-		Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -serviceprincipalname $aadClientID -PermissionsToSecrets all -PermissionsToKeys all 
-		Set-AzureRmKeyVaultaccesspolicy -vaultname $KeyVaultName -resourcegroup $resourceGroupName -enabledfordiskencryption
- }
- 
+# Get the Encryption Key for Disk Encryption
+Try {
+        $EncryptionKeySecret = Get-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $EncryptionKeyName  -ErrorAction Stop
+        $EncryptionKey = $EncryptionKeySecret.SecretValueText
+	    Write-Output "Found Existing Vault Secret for Disk Encryption."
+} catch {
+        $secretValue = [Guid]::NewGuid().ToString()
+       	$EncryptionKey = ConvertTo-SecureString $secretValue -AsPlainText -Force
+        Write-Output "Adding new Vault Secret for Disk Encryption."
+       	Set-AzureKeyVaultSecret -VaultName $KeyVaultName -Name $EncryptionKeyName -SecretValue $EncryptionKey
+}            
+
  # Create Storage Account. Note: If disk Encryption desired - cannot use Premium Storage.
  Try {
   $VMDiskStorageAccount = Get-AzureRmStorageAccount  -Name $VMDiskStorageAccountName -ResourceGroupName $resourceGroupName -ErrorAction Stop
   Write-Output "Using Existing Storage Account for Disks."
  } catch {
   Write-Output "Creating New Disk Storage Account."
-  if($DiskEncryptionVaultUrl) {
+  if($EncryptionKey) {
     # Use non-premium storage.
     New-AzureRmStorageAccount -Name $VMDiskStorageAccountName -Location $location -Type "Standard_LRS" -ResourceGroupName $resourceGroupName -Tag $Tags -ErrorAction Stop
   }
@@ -225,7 +211,7 @@
  
      # Kick of Encryption of the VM's. Requires a reboot - takes 15 mins or so
      if($DiskEncryptionVaultUrl) {
-        Set-AzureRmVMDiskEncryptionExtension -ResourceGroupName $resourceGroupName -VMName $vm.Name -AadClientID $aadClientID -AadClientSecret $aadClientSecret -DiskEncryptionKeyVaultUrl $DiskEncryptionVaultUrl -DiskEncryptionKeyVaultId $keyVaultResourceId -Force 
+        Set-AzureRmVMDiskEncryptionExtension -ResourceGroupName $resourceGroupName -VMName $vm.Name -AadClientID $AutomationConnection.ApplicationId -AadClientSecret $EncryptionKey -DiskEncryptionKeyVaultUrl $DiskEncryptionVaultUrl -DiskEncryptionKeyVaultId $keyVaultResourceId -Force 
      }
           
      # Register with DSC
