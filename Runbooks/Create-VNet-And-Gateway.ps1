@@ -9,35 +9,35 @@ param (
         [String]$randomName,
 
         [parameter(Mandatory=$false)]
-        [PSCredential]$CredentialAsset,
-
-        [parameter(Mandatory=$false)]
         [System.Collections.ArrayList]$Tags
 )
+Write-Output "Create-VNet-And-Gateway Script Started."
 
 #Random Name that is not too long and starts with a letter that we use to name all our cattle (no pets!)
 if(!$randomName) {
-do { $randomName = [System.Guid]::NewGuid().toString().substring(0,15) -ireplace '-' }
-until ($randomName -match "(^[a-z])")
+    do { $randomName = [System.Guid]::NewGuid().toString().substring(0,15) -ireplace '-' }
+    until ($randomName -match "(^[a-z])")
+    Write-Output "Random Name: $randomName"
 }
-Write-Output "Random Name: $randomName"
+
 $Environment = Get-AutomationVariable -Name 'Environment'
 
 if(!$Tags) {
-$Tags = New-Object System.Collections.ArrayList;
-$Tags.Add(@{ Name="created-by"; Value="Create-VNet-AndGateway Runbook"})
-$Tags.Add(@{ Name="environment"; Value=$Environment })
-$Tags.Add(@{ Name="application"; Value="Cloudy Application"})
-$Tags.Add(@{ Name="application-version"; Value="1.0"})
-$Tags.Add(@{ Name="auto-name"; Value=$randomName })
+    $Tags = New-Object System.Collections.ArrayList;
+    $Tags.Add(@{ Name="created-by"; Value="Create-VNet-AndGateway Runbook"})
+    $Tags.Add(@{ Name="environment"; Value=$Environment })
+    $Tags.Add(@{ Name="application"; Value="Cloudy Application"})
+    $Tags.Add(@{ Name="application-version"; Value="1.0"})
+    $Tags.Add(@{ Name="auto-name"; Value=$randomName })
 }
 
 if(!$location) { $location = Get-AutomationVariable -Name 'Location' }
-if($CredentialAsset -eq $null) { $CredentialAsset = Get-AutomationPSCredential -Name 'CloudyDemosCredential' }
 $subscriptionId = Get-AutomationVariable -Name 'SubscriptionId'
 
 # Log In to the Azure Subscription we want to add resources to
-Login-AzureRmAccount -Credential $CredentialAsset -SubscriptionId $subscriptionId 
+$Conn = Get-AutomationConnection -Name "AzureRunAsConnection"  -ErrorAction Stop
+Add-AzureRMAccount -ServicePrincipal -Tenant $Conn.TenantID -ApplicationId $Conn.ApplicationID -CertificateThumbprint $Conn.CertificateThumbprint
+Select-AzureRmSubscription -SubscriptionId $subscriptionId
 
 if(!$resourceGroupName) { $resourceGroupName = $randomName }
 Try {
@@ -45,16 +45,16 @@ $resourceGroup = Get-AzureRmResourceGroup -Name $resourceGroupName -Location $lo
 Write-Output "Using Existing Resource Group."
 } catch {
 Write-Output "Creating New Resource Group."
-New-AzureRmResourceGroup -Name $resourceGroupName -Location $location -Tag $Tags
+New-AzureRmResourceGroup -Name $resourceGroupName -Location $location -Tag $Tags -ErrorAction Stop
 } 
 
 # Virtual Network Params
 $vnetName = $resourceGroupName + "-Network"
-$vnetAddressRange = Get-AutomationVariable -Name 'VNetAddressRange'
-$FrontEndAddressPrefix = Get-AutomationVariable -Name 'VNetFrontEndAddressRange'
-$MiddleTierAddressPrefix = Get-AutomationVariable -Name 'VNetMiddleAddressRange'
-$BackEndAddressPrefix = Get-AutomationVariable -Name 'VNetBackEndAddressRange'
-$GatewaySubnetAddressPrefix = Get-AutomationVariable -Name 'VNetGatewayAddressRange'
+$vnetAddressRange = Get-AutomationVariable -Name 'VNetAddressRange' -ErrorAction Stop
+$FrontEndAddressPrefix = Get-AutomationVariable -Name 'VNetFrontEndAddressRange' -ErrorAction Stop
+$MiddleTierAddressPrefix = Get-AutomationVariable -Name 'VNetMiddleAddressRange' -ErrorAction Stop
+$BackEndAddressPrefix = Get-AutomationVariable -Name 'VNetBackEndAddressRange' -ErrorAction Stop
+$GatewaySubnetAddressPrefix = Get-AutomationVariable -Name 'VNetGatewayAddressRange' -ErrorAction Stop
 
 $GWName = $vnetName + "-Gateway"
 $GWIPName = "GatewayIP"
