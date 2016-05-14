@@ -11,22 +11,27 @@ $location = Get-AutomationVariable -Name 'Location' -ErrorAction Stop
 $aadClientID = $Conn.ApplicationID
 $cert = Get-AutomationCertificate -Name "DiskEncryption" -ErrorAction Stop
 $thumbprint = $cert.thumbprint
+Write-Output "Certificate Retrieved; thumbprint: " $thumbprint
 
 try {
 	$keyvault = get-azurermkeyvault -vaultname $keyvaultname -resourcegroup $resourceGroupName -ErrorAction Stop
 } Catch {
 	new-azurermkeyvault -vaultname $keyvaultname -location $location -ResourceGroupName $resourceGroupName
 	$keyvault = get-azurermkeyvault -vaultname $keyvaultname -resourcegroup $resourceGroupName -ErrorAction Stop
+	set-azurermkeyvaultaccesspolicy -vaultname $keyvaultname -resourcegroup $resourceGroupName -enabledfordiskencryption
+	set-azurermkeyvaultaccesspolicy -vaultname $keyvaultname -resourcegroup $resourceGroupName -enabledfordeployment 
+	set-azurermkeyvaultaccesspolicy -vaultname $keyvaultname -serviceprincipalname $aadclientid -permissionstokeys all -permissionstosecrets all -resourcegroupname $resourceGroupName
 }
-set-azurermkeyvaultaccesspolicy -vaultname $keyvaultname -resourcegroup $resourceGroupName -enabledfordiskencryption
-set-azurermkeyvaultaccesspolicy -vaultname $keyvaultname -resourcegroup $resourceGroupName -enabledfordeployment 
-set-azurermkeyvaultaccesspolicy -vaultname $keyvaultname -serviceprincipalname $aadclientid -permissionstokeys all -permissionstosecrets all -resourcegroupname $resourceGroupName
 
 $diskEncryptionKeyVaultUrl = $keyvault.vaulturi
 $KeyVaultResourceId = $keyvault.resourceid
 
 $kekname = 'keyencryptionkey'
-$kek = add-azurekeyvaultkey -vaultname $keyvaultname -name $kekname -destination 'software'
+Try {
+	$kek = get-azurekeyvaultkey -vaultname $keyvaultname -name $kekname -ErrorAction Stop
+} Catch { 
+	$kek = add-azurekeyvaultkey -vaultname $keyvaultname -name $kekname -destination 'software'
+}
 $KeyEncryptionKeyUrl = $kek.key.kid
 
 $bincert = $cert.getrawcertdata()
@@ -47,9 +52,14 @@ $jsonEncoded = [System.Convert]::ToBase64String($jsonObjectBytes)
 $secret = ConvertTo-SecureString -String $jsonEncoded -AsPlainText –Force
 Set-AzureKeyVaultSecret -VaultName $keyVaultName -Name $vmname -SecretValue $secret 
 $encryptionCertURI = (get-azurekeyvaultsecret -vaultname $keyVaultName -Name $vmname -ErrorAction Stop).Id
-
+Write-Output "Secret Set. encryptionCertURI: " $encryptionCertURI 
+	
 $vm = Get-AzureRmVm -Name $vmname -resourcegroup $resourceGroupName -ErrorAction Stop
+Write-Output "Adding Secret to VM..."
 add-azurermvmsecret -VM $vm -sourcevaultid $KeyVaultResourceId -certificateStore "My" -CertificateURL $encryptionCertURI -ErrorAction Stop
+Write-Output "Updating VM..."
 update-azurermvm -resourcegroupname $resourceGroupName -vm $vm -ErrorAction Stop
+Write-Output "Secret added to VM. Starting Encryption..."
 
+Write-Output "Set-AzureRmVMDiskEncryptionExtension -ResourceGroupName $resourceGroupName -VMName $vmname -AadClientID $aadClientID -AadClientCertThumbprint $thumbprint -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl -DiskEncryptionKeyVaultId $KeyVaultResourceId -KeyEncryptionKeyUrl $keyEncryptionKeyUrl -KeyEncryptionKeyVaultId $KeyVaultResourceId -Force -ErrorAction Stop"
 Set-AzureRmVMDiskEncryptionExtension -ResourceGroupName $resourceGroupName -VMName $vmname -AadClientID $aadClientID -AadClientCertThumbprint $thumbprint -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl -DiskEncryptionKeyVaultId $KeyVaultResourceId -KeyEncryptionKeyUrl $keyEncryptionKeyUrl -KeyEncryptionKeyVaultId $KeyVaultResourceId -Force -ErrorAction Stop
