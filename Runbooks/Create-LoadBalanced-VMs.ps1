@@ -255,7 +255,7 @@ $secret = ConvertTo-SecureString -String $jsonEncoded -AsPlainText –Force
      #Install anti-malware
      Set-AzureRmVMExtension -ResourceGroupName $resourceGroupName -VMName $vm.Name -Name "IaaSAntimalware" -Publisher "Microsoft.Azure.Security" -ExtensionType "IaaSAntimalware" -TypeHandlerVersion $AntimalwareTypeHandlerMajorAndMinorVersions -SettingString $AntimalwareSettingsString -Location $location
      
-     # Shut it down
+     # Shut it down?
      if($ShutDownVMsAfterCreation) { Stop-AzureRmVM -Name $vm.Name -ResourceGroupName $resourceGroupName -force }
  }
  Write-Output "Done!"
