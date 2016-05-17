@@ -43,7 +43,7 @@
  $backEndIpConfigName = $randomName+ "-Backend"
  $VMDiskStorageAccountName = $randomName + "vhds"
  $DiagnosticsStorageAccountName = $randomName + "diags"
- $pubName = "MicrosoftWindowsServer"
+ $pubName = "MicrosoftWindowsServer" 
  $offerName = "WindowsServer"
  $skuName = "2012-R2-Datacenter"
  $KeyVaultName = $randomName + "-Vault"
@@ -228,14 +228,21 @@ $secret = ConvertTo-SecureString -String $jsonEncoded -AsPlainText –Force
  Foreach ($vm in $ArrayOfVmConfigs){
 
      # Create VM
+     Write-Output "Creating VM " $vm.Name
      New-AzureRmVM -ResourceGroupName $resourceGroupName -Location $location -VM $vm -Tag $Tags
  
-     # Kick of Encryption of the VM's. Requires a reboot - takes 15 mins or so
-	 Set-AzureKeyVaultSecret -VaultName $keyVaultName -Name $vm.Name -SecretValue $secret 
+     Write-Output "Setting Secret" $vm.Name
+	 Set-AzureKeyVaultSecret -VaultName $keyVaultName -Name $vm.Name -SecretValue $secret -ErrorAction Stop
 	 $encryptionCertURI = (get-azurekeyvaultsecret -vaultname $keyVaultName -Name $vm.Name -ErrorAction Stop).Id
 
-	 add-azurermvmsecret -VM $vm -sourcevaultid $KeyVaultResourceId -certificateStore "My" -CertificateURL $encryptionCertURI -ErrorAction Stop
-  	 Set-AzureRmVMDiskEncryptionExtension -ResourceGroupName $resourceGroupName -VMName $vm.Name -AadClientID $aadClientID -AadClientCertThumbprint $thumbprint -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl -DiskEncryptionKeyVaultId $KeyVaultResourceId -KeyEncryptionKeyUrl  $keyEncryptionKeyUrl -KeyEncryptionKeyVaultId $KeyVaultResourceId -Force -ErrorAction Stop
+     Write-Output "Inserting Certificate from " $encryptionCertURI
+	 $vm = Get-AzureRmVM -Name $vm.Name -ResourceGroupName $resourceGroupName -ErrorAction Stop
+	 Add-AzureRmVMSecret -VM $vm -sourcevaultid $KeyVaultResourceId -certificateStore "My" -CertificateURL $encryptionCertURI -ErrorAction Stop 
+	 Update-AzureRmVM -ResourceGroupName $resourceGroupName -VM $vm -ErrorAction Stop
+
+     # Kick of Encryption of the VM's. Requires a reboot - takes 15 mins or so
+     Write-Output "Starting Encryption"
+  	 Set-AzureRmVMDiskEncryptionExtension -ResourceGroupName $resourceGroupName -VMName $vm.Name -AadClientID $aadClientID -AadClientCertThumbprint $thumbprint -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl -DiskEncryptionKeyVaultId $KeyVaultResourceId -KeyEncryptionKeyUrl    $keyEncryptionKeyUrl -KeyEncryptionKeyVaultId $KeyVaultResourceId -Force -ErrorAction Stop
           
      # Register with DSC
      Register-AzureRmAutomationDscNode -ResourceGroupName $AutomationResourceGroup -AutomationAccountName $AutomationAccountName -AzureVMName $vm.Name -AzureVMResourceGroup $resourceGroupName -AzureVMLocation $location -ConfigurationMode ApplyAndAutocorrect -RebootNodeIfNeeded $true -ActionAfterReboot ContinueConfiguration -NodeConfigurationName $DSCConfigurationName
