@@ -54,8 +54,9 @@
  $EncryptionKeyName = $randomName + "-DiskEncryptionKey"
  $cert = Get-AutomationCertificate -Name "AzureRunAsCertificate" -ErrorAction Stop
  $thumbprint = $cert.thumbprint 
+ Write-Output "Using Certificate Thumbprint: " $thumbprint 
  $certPwd = Get-AutomationVariable –Name "DiskEncryptionPassword" -ErrorAction Stop
- $kekname = $randomName + "-KeyEncryptionKey"
+ $kekname = $randomName + "-KeyEncryptionKey" 
   
  # Build Tags to label our resources
  $Tags = New-Object System.Collections.ArrayList;
