@@ -14,11 +14,18 @@
       "metadata": {
         "description": "Where are the Secrets used by this template stored? E.g. /subscriptions/[Subscription ID]/resourceGroups/cloudydemos/providers/Microsoft.KeyVault/vaults/CloudySecrets"
       }
+    },
+    "DeploymentVersion" : {
+        "type": "string",
+        "defaultValue": "None Specified",
+        "metadata": {
+            "description" : "What value shall we tag these resources with to indicate what version this is?"
+        }
     }
   },
   "variables": {
     "virtualNetworkName": "[concat(substring(uniqueString(resourceGroup().id),0,9),'vnet')]",
-    "networkTemplateUri" :    "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/vnet.json",
+    "NetworkTemplateUri" :    "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/vnet.json",
     "DataTierTemplateUri" :   "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/DataTier.json",
     "WebTierTemplateUri" :    "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/WebTier.json",
     "MiddleTierTemplateUri" : "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/MiddleTier.json",
@@ -27,11 +34,24 @@
     "FESubnetPrefix" : "10.0.0.0/24",
     "AppSubnetPrefix" : "10.0.1.0/24",
     "DBSubnetPrefix" : "10.0.2.0/24",
-    "localGatewayIpAddress" : "123.45.67.89",
-    "localAddressPrefix" : "169.254.0.0/24",
+    "SecuritySubnetPrefix" : "10.0.3.0/24",
+    "GatewaySubnetPrefix" : "10.0.4.0/24",
     "ExistingAutomationAccountName" : "[uniqueString(resourceGroup().id)]"
   },
   "resources": [
+      {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[uniqueString(resourceGroup().id)]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "accountType": "Standard_LRS",
+        "tags": {
+				"DeploymentVersion": "[parameters('DeploymentVersion')]",
+                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+        }
+      }
+    },
     { 
      "apiVersion": "2015-01-01", 
      "name": "VirtualNetwork", 
@@ -39,7 +59,7 @@
      "properties": { 
        "mode": "incremental", 
        "templateLink": {
-          "uri": "[variables('networkTemplateUri')]",
+          "uri": "[variables('NetworkTemplateUri')]",
           "contentVersion": "1.0.0.0"
        }, 
        "parameters": { 
@@ -47,7 +67,10 @@
           "addressPrefix" : { "value": "[variables('VNETAddressPrefix')]" },
           "FESubnetPrefix": { "value": "[variables('FESubnetPrefix')]" },
           "AppSubnetPrefix":{ "value": "[variables('AppSubnetPrefix')]" },
-          "DBSubnetPrefix": { "value": "[variables('DBSubnetPrefix')]" }
+          "DBSubnetPrefix": { "value": "[variables('DBSubnetPrefix')]" },
+          "SecuritySubnetPrefix" : { "value": "[variables('SecuritySubnetPrefix')]" },
+          "GatewaySubnetPrefix" : { "value": "[variables('GatewaySubnetPrefix')]" },
+          "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" }
        } 
      } 
   },
@@ -79,8 +102,8 @@
                 }
           },
           "existingSqlSubnetName" : {"value": "DBSubnetName" },
-          "existingDomainName" : {"value": "[uniqueString(resourceGroup().id)]" },
-          "existingAdPDCVMName" : {"value": "adPDC" },
+          "existingDomainName" : {"value" : "[concat(uniqueString(resourceGroup().id),'.cloudydemos.com')]" },
+          "existingAdPDCVMName" : {"value": "PDC" },
           "adminUsername": {"value": "[parameters('adminUsername')]" },
           "adminPassword" : {
             "reference": {
@@ -89,7 +112,8 @@
                 }, 
                 "secretName": "AdministratorPassword" 
                 }
-          }
+          },
+          "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" }
        } 
      } 
   },
@@ -138,7 +162,9 @@
           },
           "automationAccountName" : {"value": "[variables('ExistingAutomationAccountName')]" },
           "timestamp" : {"value": "[uniqueString(resourceGroup().id)]" },          
-          "jobid" : {"value": "[uniqueString(resourceGroup().id)]" }
+          "jobid" : {"value": "[uniqueString(resourceGroup().id)]" },
+          "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" },
+          "DiagnosticsStorageAccountName": { "value": "[uniqueString(resourceGroup().id)]" }
        } 
      } 
   },
@@ -161,7 +187,8 @@
           "redisCacheName" : {"value": "[uniqueString(resourceGroup().id)]" },
           "redisCacheStaticIP" : {"value": "10.1.1.5" },
           "existingDiagnosticsStorageAccountName" : {"value": "uniqueString(resourceGroup().id)" },
-          "redisShardCount": { "value": 2 }
+          "redisShardCount": { "value": 2 },
+          "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" }
        } 
      } 
   },
@@ -180,8 +207,7 @@
        }, 
        "parameters": { 
           "virtualNetworkName" : {"value" : "[variables('virtualNetworkName')]" },
-          "newStorageAccountName" : {"value" : "[uniqueString(resourceGroup().id)]" },
-          "virtualNetworkAddressRange" : {"value" : "[variables('VNETAddressPrefix')]" },
+          "newStorageAccountName" : {"value" : "[concat(uniqueString(resourceGroup().id),'ad')]" },
           "adminPassword"  : {
             "reference": {
               "keyVault": {
@@ -191,7 +217,8 @@
                 }
           },
           "domainName" : {"value" : "[concat(uniqueString(resourceGroup().id),'.cloudydemos.com')]" },
-          "dnsPrefix" : {"value" : "[concat(uniqueString(resourceGroup().id),'2')]" }
+          "dnsPrefix" : {"value" : "[concat(uniqueString(resourceGroup().id),'2')]" },
+          "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" }
        } 
      } 
   }

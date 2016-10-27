@@ -116,8 +116,7 @@
       "type": "string",
       "metadata": {
         "description": "DNS domain name for existing Active Directory domain"
-      },
-      "defaultValue": "contoso.com"
+      }
     },
 
     "existingAdPDCVMName": {
@@ -179,8 +178,14 @@
         "description": "Location of resources upon which this template is dependent, such as nested templates and DSC modules"
       },
       "defaultValue": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/sql-server-2014-alwayson-dsc"
+    },
+     "DeploymentVersion" : {
+        "type": "string",
+        "defaultValue": "None Specified",
+        "metadata": {
+            "description" : "What value shall we tag these resources with to indicate what version this is?"
+        }
     }
-
   },
 
   "variables": {

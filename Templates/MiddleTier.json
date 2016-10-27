@@ -35,12 +35,14 @@
     },
     "subnet": {
       "type": "string",
+      "defaultValue": "DataTierSubnet",
       "metadata": {
         "description": "Name of an existing subnet to join in the virtual network. Requires configuring a virtualNetwork."
       }
     },
     "redisCacheStaticIP": {
       "type": "string",
+      "defaultValue": "10.0.2.4",
       "metadata": {
         "description": "The static IP address the redis cache should have, for a cache in a virtual network subnet. Requires configuring a virtualNetwork."
       }
