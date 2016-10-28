@@ -133,7 +133,7 @@
        "parameters": { 
           "virtualNetworkName": { "value": "[variables('virtualNetworkName')]" },
           "domainNamePrefix": {"value": "[uniqueString(resourceGroup().id)]" },
-          "vmSku" : {"value": "Standard_A2" },
+          "vmSku" : {"value": "Standard_FS2" },
           "windowsOSVersion": {"value": "2016-Datacenter" },
           "vmssName" : {"value": "[substring(uniqueString(resourceGroup().id),0,9)]" },
           "adminUsername" : {"value": "[uniqueString(resourceGroup().id)]" },
