@@ -257,9 +257,12 @@
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[variables('sqlAvailabilitySetName')]",
       "apiVersion": "[variables('apiVersionNetworks')]",
-      "location": "[resourceGroup().location]"
+      "location": "[resourceGroup().location]",
+      "tags": {
+				"DeploymentVersion": "[parameters('DeploymentVersion')]",
+                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+        }
     },
-
     {
       "name": "[variables('deploySqlClusterVms')]",
       "type": "Microsoft.Resources/deployments",
@@ -287,7 +290,6 @@
         }
       }
     },
-
     {
       "name": "[variables('deploySqlWitnessVms')]",
       "type": "Microsoft.Resources/deployments",
@@ -321,6 +323,10 @@
       "dependsOn": [
         "[variables('deploySqlWitnessVmsId')]"
       ],
+      "tags": {
+				"DeploymentVersion": "[parameters('DeploymentVersion')]",
+                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+        },
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -358,6 +364,10 @@
       "dependsOn": [
         "[variables('deploySqlClusterVmsId')]"
       ],
+      "tags": {
+				"DeploymentVersion": "[parameters('DeploymentVersion')]",
+                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+        },
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -401,6 +411,10 @@
         "[variables('deploySqlClusterVmsId')]",
         "[variables('updateSQLCNic1Id')]"
       ],
+      "tags": {
+				"DeploymentVersion": "[parameters('DeploymentVersion')]",
+                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+        },
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -443,6 +457,10 @@
       "dependsOn": [
         "[variables('updateSQLWNicId')]"
       ],
+      "tags": {
+				"DeploymentVersion": "[parameters('DeploymentVersion')]",
+                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+        },
       "properties": {
         "mode": "Incremental",
         "templateLink": {

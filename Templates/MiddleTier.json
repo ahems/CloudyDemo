@@ -27,7 +27,7 @@
         "description": "The size of the new Azure Redis Cache instance. Valid family and capacity combinations are (C0..C6, P1..P4)."
       }
     },
-    "virtualNetwork": {
+    "virtualNetworkName": {
       "type": "string",
       "metadata": {
         "description": "Name of an existing virtual network to join, in same subscription and region. Requires Premium SKU."
@@ -59,6 +59,13 @@
       "metadata": {
         "description": "Set to true to allow access to redis on port 6379, without SSL tunneling (less secure)."
       }
+    },
+     "DeploymentVersion" : {
+        "type": "string",
+        "defaultValue": "None Specified",
+        "metadata": {
+            "description" : "What value shall we tag these resources with to indicate what version this is?"
+        }
     }
   },
   "resources": [
@@ -67,6 +74,10 @@
       "name": "[parameters('redisCacheName')]",
       "type": "Microsoft.Cache/Redis",
       "location": "[resourceGroup().location]",
+      "tags": {
+				"DeploymentVersion": "[parameters('DeploymentVersion')]",
+                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+            },
       "properties": {
         "enableNonSslPort": "[parameters('enableNonSslPort')]",
         "shardCount": "[parameters('redisShardCount')]",
@@ -77,7 +88,7 @@
         },
         "staticIP": "[parameters('redisCacheStaticIP')]",
         "subnet": "[parameters('subnet')]",
-        "virtualNetwork": "[parameters('virtualNetwork')]"
+        "virtualNetwork": "[parameters('virtualNetworkName')]"
       },
       "resources": [
         {
