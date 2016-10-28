@@ -185,7 +185,6 @@
        "parameters": { 
           "virtualNetworkName": { "value": "[concat(resourceGroup().id, '/providers/Microsoft.Network/virtualNetworks/',variables('virtualNetworkName'))]" },
           "redisCacheName" : {"value": "[uniqueString(resourceGroup().id)]" },
-          "redisCacheStaticIP" : {"value": "10.1.1.5" },
           "existingDiagnosticsStorageAccountName" : {"value": "uniqueString(resourceGroup().id)" },
           "redisShardCount": { "value": 2 },
           "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" }

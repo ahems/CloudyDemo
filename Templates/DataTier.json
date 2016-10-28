@@ -49,12 +49,18 @@
         "Standard_D13",
         "Standard_DS13",
         "Standard_D14",
-        "Standard_DS14"
+        "Standard_DS14",
+        "Standard_F1",
+        "Standard_F1s",
+        "Standard_F2",
+        "Standard_F2s",
+        "Standard_F4",
+        "Standard_F4s"
       ],
       "metadata": {
         "description": "Size of the SQL VM instances to be created"
       },
-      "defaultValue": "Standard_DS3"
+      "defaultValue": "Standard_F4s"
     },
 
     "sqlWitnessVMSize": {
@@ -75,12 +81,18 @@
         "Standard_D13",
         "Standard_DS13",
         "Standard_D14",
-        "Standard_DS14"
+        "Standard_DS14",
+         "Standard_F1",
+        "Standard_F1s",
+        "Standard_F2",
+        "Standard_F2s",
+        "Standard_F4",
+        "Standard_F4s"
       ],
       "metadata": {
         "description": "Size of the Witness VM instance to be created"
       },
-      "defaultValue": "Standard_DS1"
+      "defaultValue": "Standard_F2s"
     },
 
     "sqlServerServiceAccountUserName": {
