@@ -10,14 +10,22 @@
         },
         "vmSku": {
             "type": "string",
-            "defaultValue": "Standard_A2",
+            "allowedValues": [
+                "Standard_F1",
+                "Standard_FS1",
+                "Standard_F2",
+                "Standard_FS2",
+                "Standard_F4",
+                "Standard_FS4"
+            ],
+            "defaultValue": "Standard_FS2",
             "metadata": {
                 "description": "VM size for the VM Scale Set + the mgmt VM"
             }
         },
         "windowsOSVersion": {
             "type": "string",
-            "defaultValue": "2012-R2-Datacenter",
+            "defaultValue": "2016-Datacenter",
             "metadata": {
                 "description": "The Windows Server version for the VM. This will pick a fully patched image of this given Windows version"
             }
@@ -31,7 +39,7 @@
         },
         "instanceCount": {
             "type": "int",
-            "defaultValue": 5,
+            "defaultValue": 2,
             "metadata": {
                 "description": "Number of VM instances (100 or less)."
             },
