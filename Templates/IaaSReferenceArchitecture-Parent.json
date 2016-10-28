@@ -44,12 +44,12 @@
       "name": "[uniqueString(resourceGroup().id)]",
       "apiVersion": "2015-05-01-preview",
       "location": "[resourceGroup().location]",
-      "properties": {
-        "accountType": "Standard_LRS",
-        "tags": {
+      "tags": {
 				"DeploymentVersion": "[parameters('DeploymentVersion')]",
                 "UniqueId" : "[uniqueString(resourceGroup().id)]"
-        }
+        },
+        "properties": {
+        "accountType": "Standard_LRS"        
       }
     },
     { 
@@ -122,7 +122,8 @@
      "name": "WebTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork"
+        "Microsoft.Resources/deployments/VirtualNetwork",
+        "[concat('Microsoft.Storage/storageAccounts/', uniqueString(resourceGroup().id))]"
       ], 
      "properties": { 
        "mode": "incremental", 
@@ -133,7 +134,7 @@
        "parameters": { 
           "virtualNetworkName": { "value": "[variables('virtualNetworkName')]" },
           "domainNamePrefix": {"value": "[uniqueString(resourceGroup().id)]" },
-          "vmSku" : {"value": "Standard_FS2" },
+          "vmSku" : {"value": "Standard_F2s" },
           "windowsOSVersion": {"value": "2016-Datacenter" },
           "vmssName" : {"value": "[substring(uniqueString(resourceGroup().id),0,9)]" },
           "adminUsername" : {"value": "[uniqueString(resourceGroup().id)]" },
@@ -174,7 +175,8 @@
      "name": "MiddleTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork"
+        "Microsoft.Resources/deployments/VirtualNetwork",
+        "[concat('Microsoft.Storage/storageAccounts/', uniqueString(resourceGroup().id))]"
       ], 
      "properties": { 
        "mode": "incremental", 
@@ -196,7 +198,8 @@
      "name": "SecurityTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork"
+        "Microsoft.Resources/deployments/VirtualNetwork",
+        "[concat('Microsoft.Storage/storageAccounts/', uniqueString(resourceGroup().id))]"
       ],
      "properties": { 
        "mode": "incremental", 
@@ -216,7 +219,7 @@
                 }
           },
           "domainName" : {"value" : "[concat('a', uniqueString(resourceGroup().id),'.cloudydemos.com')]" },
-          "dnsPrefix" : {"value" : "[concat(uniqueString(resourceGroup().id),'2')]" },
+          "dnsPrefix" : {"value" : "[concat('a', uniqueString(resourceGroup().id),'2')]" },
           "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" }
        } 
      } 
