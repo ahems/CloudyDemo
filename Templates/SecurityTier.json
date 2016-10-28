@@ -312,7 +312,6 @@
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "Microsoft.Resources/deployments/VNet",
         "[concat('Microsoft.Network/loadBalancers/',variables('adLBName'))]"
       ],
       "apiVersion": "2015-05-01-preview",
