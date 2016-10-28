@@ -215,7 +215,7 @@
                 "secretName": "AdministratorPassword" 
                 }
           },
-          "domainName" : {"value" : "[concat(uniqueString(resourceGroup().id),'.cloudydemos.com')]" },
+          "domainName" : {"value" : "[concat('a', uniqueString(resourceGroup().id),'.cloudydemos.com')]" },
           "dnsPrefix" : {"value" : "[concat(uniqueString(resourceGroup().id),'2')]" },
           "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" }
        } 
