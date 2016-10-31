@@ -231,7 +231,7 @@
         "insightsApi": "2015-04-01",
         "automationApiVersion": "2015-10-31",
         "storageAccountType": "[parameters('storageAccountType')]",
-        "saCount": 5,
+        "saCount": "[parameters('instanceCount')]",
         "namingInfix": "[toLower(parameters('vmssName'))]",
         "newStorageAccountSuffix": "[concat(variables('namingInfix'), 'sa')]",
         "uniqueStringArray": [

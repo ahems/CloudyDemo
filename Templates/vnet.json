@@ -315,37 +315,25 @@
           {
             "name": "FrontEndSubnet",
             "properties": {
-              "addressPrefix": "[parameters('FESubnetPrefix')]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('FENSGName'))]"
-              }
+              "addressPrefix": "[parameters('FESubnetPrefix')]"
             }
           },
           {
             "name": "WebTierSubnet",
             "properties": {
-              "addressPrefix": "[parameters('AppSubnetPrefix')]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('AppNSGName'))]"
-              }
+              "addressPrefix": "[parameters('AppSubnetPrefix')]"
             }
           },
           {
             "name": "SecurityTierSubnet",
             "properties": {
-              "addressPrefix": "[parameters('SecuritySubnetPrefix')]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('SecurityNSGName'))]"
-              }
+              "addressPrefix": "[parameters('SecuritySubnetPrefix')]"
             }
           },
           {
             "name": "DataTierSubnet",
             "properties": {
-              "addressPrefix": "[parameters('DBSubnetPrefix')]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('DBNSGName'))]"
-              }
+              "addressPrefix": "[parameters('DBSubnetPrefix')]"
             }
           },
           {
