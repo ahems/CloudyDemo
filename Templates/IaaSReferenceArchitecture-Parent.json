@@ -30,6 +30,7 @@
     "WebTierTemplateUri" :    "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/WebTier.json",
     "MiddleTierTemplateUri" : "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/MiddleTier.json",
     "SecurityTemplateUri" :   "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/SecurityTier.json",
+    "WAFTemplateUri" : "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/WAF.json",
     "VNETAddressPrefix" : "10.0.0.0/16",
     "FESubnetPrefix" : "10.0.0.0/24",
     "AppSubnetPrefix" : "10.0.1.0/24",
@@ -44,8 +45,8 @@
       "apiVersion": "2015-05-01-preview",
       "location": "[resourceGroup().location]",
       "tags": {
-				"DeploymentVersion": "[parameters('DeploymentVersion')]",
-                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+				  "DeploymentVersion": "[parameters('DeploymentVersion')]",
+           "UniqueId" : "[uniqueString(resourceGroup().id)]"
         },
         "properties": {
         "accountType": "Standard_LRS"        
