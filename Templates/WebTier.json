@@ -33,7 +33,7 @@
         "vmssName": {
             "type": "string",
             "metadata": {
-                "description": "String used as a base for naming resources (9 characters or less). A hash is prepended to this string for some resources, and resource-specific information is appended."
+                "description": "String used as a base for naming resources (9 characters or less)."
             },
             "maxLength": 9
         },
@@ -134,28 +134,6 @@
                 "description": "The current datetime, as a string, to force the request to go through ARM even if all fields are the same as last ARM deployment of this template; example in parameters file is in MM/dd/yyyy H:mm:ss tt format"
             }
         },
-        "automationAccountName": {
-            "type": "string",
-            "defaultValue": "myAutomationAccount",
-            "metadata": {
-                "description": "The name of the Automation account to use.  Check the SKU and tags to make sure they match the existing account."
-            }
-        },
-        "automationRegionId": {
-            "type": "string",
-            "defaultValue": "East US 2",
-            "allowedValues": [
-                "Japan East",
-                "East US 2",
-                "West Europe",
-                "Southeast Asia",
-                "South Central US",
-                "Central India"
-            ],
-            "metadata": {
-                "description": "The region the Automation account is located in."
-            }
-        },
         "storageAccountType": {
           "type": "string",
           "allowedValues": [
@@ -169,33 +147,6 @@
             "description": "The type of the Storage Account created"
         },
             "defaultValue": "Premium_LRS"
-        },
-        "configurationName": {
-            "type": "string",
-            "defaultValue": "MyService",
-            "metadata": {
-                "description": "The name of the DSC Configuration. The name must match the name in the URI."
-            }
-        },
-        "configurationURI": {
-            "type": "string",
-            "defaultValue": "https://raw.github.com/Azure/azure-quickstart-templates/master/201-vmss-automation-dsc/webServer.ps1",
-            "metadata": {
-                "description": "The URI for the DSC configuration "
-            }
-        },
-        "configurationDescription": {
-            "type": "string",
-            "defaultValue": "Web Server",
-            "metadata": {
-                "description": "The description of the configuration."
-            }
-        },
-        "jobid": {
-            "type": "string",
-            "metadata": {
-                "description": "The job id to compile the configuration"
-            }
         },
         "virtualNetworkName": {
           "type": "string",
@@ -232,22 +183,20 @@
         "automationApiVersion": "2015-10-31",
         "storageAccountType": "[parameters('storageAccountType')]",
         "saCount": "[parameters('instanceCount')]",
-        "namingInfix": "[toLower(parameters('vmssName'))]",
-        "newStorageAccountSuffix": "[concat(variables('namingInfix'), 'sa')]",
         "uniqueStringArray": [
-            "[concat(variables('newStorageAccountSuffix'), '0')]",
-            "[concat(variables('newStorageAccountSuffix'), '1')]",
-            "[concat(variables('newStorageAccountSuffix'), '2')]",
-            "[concat(variables('newStorageAccountSuffix'), '3')]",
-            "[concat(variables('newStorageAccountSuffix'), '4')]"
+            "[concat(parameters('vmssName'), '0')]",
+            "[concat(parameters('vmssName'), '1')]",
+            "[concat(parameters('vmssName'), '2')]",
+            "[concat(parameters('vmssName'), '3')]",
+            "[concat(parameters('vmssName'), '4')]"
         ],
-        "vhdContainerName": "[concat(variables('namingInfix'), 'vhd')]",
-        "osDiskName": "[concat(variables('namingInfix'), 'osdisk')]",
+        "vhdContainerName": "[concat(parameters('vmssName'), 'vhd')]",
+        "osDiskName": "[concat(parameters('vmssName'), 'osdisk')]",
         "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks/',parameters('virtualNetworkName'))]",
         "subnetID": "[concat(variables('virtualNetworkID'),'/subnets/',parameters('subnetName'))]",
-        "publicIPAddressName": "[concat(variables('namingInfix'), 'pip')]",
+        "publicIPAddressName": "[concat(parameters('vmssName'), 'pip')]",
         "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses/',variables('publicIPAddressName'))]",
-        "loadBalancerName": "[concat(variables('namingInfix'), 'webtierlb')]",
+        "loadBalancerName": "[concat(parameters('vmssName'), 'webtierlb')]",
         "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers/',variables('loadBalancerName'))]",
         "frontendIPConfigurationsName": "[concat(variables('loadBalancerName'), 'frontendIPConfigurations')]",
         "frontEndIPConfigurationsID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/',variables('frontendIPConfigurationsName'))]",
@@ -267,8 +216,8 @@
         "natWinRMStartPort":51000,
         "natWinRMEndPort":51119,
         "natWinRMBackendPort":5896,
-        "nicName": "[concat(variables('namingInfix'), 'nic')]",
-        "ipConfigName": "[concat(variables('namingInfix'), 'ipconfig')]",
+        "nicName": "[concat(parameters('vmssName'), 'nic')]",
+        "ipConfigName": "[concat(parameters('vmssName'), 'ipconfig')]",
         "osType": {
             "publisher": "MicrosoftWindowsServer",
             "offer": "WindowsServer",
@@ -276,16 +225,8 @@
             "version": "latest"
         },
         "imageReference": "[variables('osType')]",
-        "automationPricingTier": "Free",
-        "dscOverwrite": "true",
-        "dscModules": {
-            "xNetworking": {
-                "moduleName": "xNetworking",
-                "moduleUri": "https://raw.github.com/Azure/azure-quickstart-templates/master/201-vmss-automation-dsc/xNetworking.zip"
-            }
-        },
-        "autoScaleWAD": "[concat(variables('namingInfix'), 'autoScale')]",
-        "autoscaleProcProfile": "[concat(variables('namingInfix'), 'autoScaleProcProfile')]",
+        "autoScaleWAD": "[concat(parameters('vmssName'), 'autoScale')]",
+        "autoscaleProcProfile": "[concat(parameters('vmssName'), 'autoScaleProcProfile')]",
 		"diagnosticsStorageAccountResourceGroup": "[resourceGroup().name]",
 		"accountid": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',variables('diagnosticsStorageAccountResourceGroup'),'/providers/','Microsoft.Storage/storageAccounts/', parameters('DiagnosticsStorageAccountName'))]",
 		"wadlogs": "<WadCfg> <DiagnosticMonitorConfiguration overallQuotaInMB=\"4096\" xmlns=\"http://schemas.microsoft.com/ServiceHosting/2010/10/DiagnosticsConfiguration\"> <DiagnosticInfrastructureLogs scheduledTransferLogLevelFilter=\"Error\"/> <WindowsEventLog scheduledTransferPeriod=\"PT1M\" > <DataSource name=\"Application!*[System[(Level = 1 or Level = 2)]]\" /> <DataSource name=\"Security!*[System[(Level = 1 or Level = 2)]]\" /> <DataSource name=\"System!*[System[(Level = 1 or Level = 2)]]\" /></WindowsEventLog>",
@@ -296,86 +237,9 @@
 		"wadcfgxend": "[concat('\"><MetricAggregation scheduledTransferPeriod=\"PT1H\"/><MetricAggregation scheduledTransferPeriod=\"PT1M\"/></Metrics></DiagnosticMonitorConfiguration></WadCfg>')]"
     },
     "resources": [
-        {
-            "type": "Microsoft.Automation/automationAccounts",
-            "name": "[parameters('automationAccountName')]",
-            "apiVersion": "[variables('automationApiVersion')]",
-            "location": "[parameters('automationRegionId')]",
-            "tags": {
-				"DeploymentVersion": "[parameters('DeploymentVersion')]",
-                "UniqueId" : "[uniqueString(resourceGroup().id)]"
-            }, 
-            "properties": {
-                "sku": {
-                    "name": "[variables('automationPricingTier')]"
-                }
-            },
-            "resources": [
-                {
-                    "name": "[concat(parameters('automationAccountName'), '/', variables('dscModules').xNetworking.ModuleName)]",
-                    "type": "microsoft.automation/automationAccounts/Modules",
-                    "apiVersion": "[variables('automationApiVersion')]",
-                    "tags": {
-                        "DeploymentVersion": "[parameters('DeploymentVersion')]",
-                        "UniqueId" : "[uniqueString(resourceGroup().id)]"
-                    },
-                    "dependsOn": [
-                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
-                    ],
-                    "properties": {
-                        "contentLink": {
-                            "uri": "[variables('dscModules').xNetworking.ModuleUri]"
-                        }
-                    }
-                },
-                {
-                    "name": "[parameters('configurationName')]",
-                    "type": "Configurations",
-                    "apiVersion": "[variables('automationApiVersion')]",
-                    "location": "[parameters('automationRegionId')]",
-                    "tags": {
-        				"DeploymentVersion": "[parameters('DeploymentVersion')]",
-                        "UniqueId" : "[uniqueString(resourceGroup().id)]"
-                    },
-                    "dependsOn": [
-                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]"
-                    ],
-                    "properties": {
-                        "logVerbose": "false",
-                        "description": "[parameters('configurationDescription')]",
-                        "state": "Enabled",
-                        "overwrite": "[variables('dscOverwrite')]",
-                        "Source": {
-                            "type": "uri",
-                            "Value": "[parameters('configurationURI')]"
-                        }
-                    }
-                },
-                {
-                    "name": "[parameters('jobid')]",
-                    "type": "Compilationjobs",
-                    "apiVersion": "[variables('automationApiVersion')]",
-                    "location": "parameters('automationRegionId')]",
-                     "tags": {
-				        "DeploymentVersion": "[parameters('DeploymentVersion')]",
-                        "UniqueId" : "[uniqueString(resourceGroup().id)]"
-                    },
-                    "dependsOn": [
-                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]",
-                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'),'/Modules/',variables('dscModules').xNetworking.ModuleName)]",
-                        "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'),'/Configurations/', parameters('configurationName'))]"
-                    ],
-                    "properties": {
-                        "configuration": {
-                            "name": "[parameters('configurationName')]"
-                        }
-                    }
-                }
-            ]
-        },
       {
         "type": "Microsoft.Storage/storageAccounts",
-        "name": "[concat(variables('uniqueStringArray')[copyIndex()], variables('newStorageAccountSuffix'))]",
+        "name": "[concat(variables('uniqueStringArray')[copyIndex()])]",
         "location": "[resourceGroup().location]",
         "apiVersion": "[variables('storageApi')]",
         "copy": {
@@ -497,13 +361,10 @@
       },
       {
         "type": "Microsoft.Compute/virtualMachineScaleSets",
-        "name": "[variables('namingInfix')]",
+        "name": "[parameters('vmssName')]",
         "location": "[resourceGroup().location]",
         "apiVersion": "[variables('computeApi')]",
         "dependsOn": [
-          "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]",
-          "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'),'/Modules/',variables('dscModules').xNetworking.ModuleName)]",
-          "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'),'/Configurations/', parameters('configurationName'))]",
           "storageLoop",
           "[concat('Microsoft.Network/loadBalancers/', variables('loadBalancerName'))]"
         ],
@@ -525,11 +386,11 @@
             "storageProfile": {
               "osDisk": {
                 "vhdContainers": [
-                  "[concat('https://', variables('uniqueStringArray')[0], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
-                  "[concat('https://', variables('uniqueStringArray')[1], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
-                  "[concat('https://', variables('uniqueStringArray')[2], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
-                  "[concat('https://', variables('uniqueStringArray')[3], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
-                  "[concat('https://', variables('uniqueStringArray')[4], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]"
+                  "[concat('https://', variables('uniqueStringArray')[0], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[1], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[2], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[3], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[4], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]"
                 ],
                 "name": "[variables('osDiskName')]",
                 "caching": "ReadOnly",
@@ -622,10 +483,10 @@
                     "autoUpgradeMinorVersion": true,
                     "settings": {
                       "xmlCfg": "[base64(concat(variables('wadcfgxstart'),variables('wadmetricsresourceid'),variables('wadcfgxend')))]",
-                      "storageAccount": "[parameters('diagnosticsStorageAccountName')]"
+                      "storageAccount": "[parameters('vmssName')]"
                     },
                     "protectedSettings": {
-                      "storageAccountName": "[parameters('diagnosticsStorageAccountName')]",
+                      "storageAccountName": "[parameters('vmssName')]",
                       "storageAccountKey": "[listkeys(variables('accountid'), '2015-06-15').key1]",
                       "storageAccountEndPoint": "https://core.windows.net"
                     }
@@ -634,7 +495,7 @@
               ]
             },
             "osProfile": {
-              "computerNamePrefix": "[variables('namingInfix')]",
+              "computerNamePrefix": "[parameters('vmssName')]",
               "adminUsername": "[parameters('adminUsername')]",
               "adminPassword": "[parameters('adminPassword')]"
             },
