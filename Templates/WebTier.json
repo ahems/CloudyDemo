@@ -386,11 +386,11 @@
             "storageProfile": {
               "osDisk": {
                 "vhdContainers": [
-                  "[concat('https://', variables('uniqueStringArray')[0], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
-                  "[concat('https://', variables('uniqueStringArray')[1], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
-                  "[concat('https://', variables('uniqueStringArray')[2], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
-                  "[concat('https://', variables('uniqueStringArray')[3], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
-                  "[concat('https://', variables('uniqueStringArray')[4], parameters('vmssName'), '.blob.core.windows.net/', variables('vhdContainerName'))]"
+                  "[concat('https://', variables('uniqueStringArray')[0], '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[1], '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[2], '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[3], '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[4], '.blob.core.windows.net/', variables('vhdContainerName'))]"
                 ],
                 "name": "[variables('osDiskName')]",
                 "caching": "ReadOnly",
