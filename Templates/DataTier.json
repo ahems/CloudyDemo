@@ -121,7 +121,7 @@
       "metadata": {
         "description": "Name of the existing subnet in the existing VNET to which the SQL & Witness VMs should be deployed"
       },
-      "defaultValue": "default"
+      "defaultValue": "DataTierSubnet"
     },
 
     "existingDomainName": {
@@ -142,16 +142,14 @@
       "type": "string",
       "metadata": {
         "description": "IP address of the existing Primary AD domain controller & DNS server"
-      },
-      "defaultValue": "10.0.0.4"
+      }
     },
 
     "existingSecondaryAdIpAddress": {
       "type": "string",
       "metadata": {
         "description": "IP address of the existing Secondary AD domain controller & DNS server"
-      },
-      "defaultValue": "10.0.0.5"
+      }
     },
 
     "sqlLBIPAddress": {
@@ -204,11 +202,7 @@
 
     "apiVersion": "2015-01-01",
     "apiVersionNetworks": "2015-06-15",
-    "apiVersionVirtualMachines": "2015-06-15",
-    "apiVersionVMExtensions": "2015-06-15",
-    "apiVersionStorage": "2015-06-15",
-
-    "sqlSubnetRef": "[concat(parameters('existingVirtualNetworkId'),'/subnets/',parameters('existingSqlSubnetName'))]",
+    "sqlSubnetRef": "[concat(resourceGroup().id, '/providers/Microsoft.Network/virtualNetworks/',parameters('existingSqlSubnetName'))]",
 
     "sqlStorageName": "[concat(parameters('newStorageAccountNamePrefix'),'sqlsa')]",
     "sqlClusterTemplateURL": "[concat(parameters('assetLocation'),'/SqlClusterVmTemplate.json')]",
