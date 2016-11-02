@@ -14,34 +14,20 @@
       "metadata": {
         "description": "The name of the subnet in the existing VNET"
       },
-      "defaultValue": "SecurityTierSubnet"
+      "defaultValue": "FrontEndSubnet"
     }
     },
   "variables": {
-    "publicIPAddressName": "[concat(uniqueString(resourceGroup().id), 'pip')]",
-    "loadBalancerName": "[concat(uniqueString(resourceGroup().id), 'lb')]",
-    "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
-    "lbID": "[resourceId('Microsoft.Network/loadBalancers',variables('loadBalancerName'))]",
-    "natPoolName": "[concat(uniqueString(resourceGroup().id), 'natpool')]",
-    "bePoolName": "[concat(uniqueString(resourceGroup().id), 'bepool')]",
-    "natStartPort": 50000,
-    "natEndPort": 50119,
-    "natBackendPort": 3389,
-    "nicName": "[concat(uniqueString(resourceGroup().id), 'nic')]",
-    "ipConfigName": "[concat(uniqueString(resourceGroup().id), 'ipconfig')]",
-    "frontEndIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/loadBalancerFrontEnd')]",
     "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
     "appGwPublicIPAddressName": "[concat(uniqueString(resourceGroup().id), 'appGwPip')]",
     "appGwName": "[concat(uniqueString(resourceGroup().id), 'appGw')]",
     "appGwPublicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('appGwPublicIPAddressName'))]",
     "appGwID": "[resourceId('Microsoft.Network/applicationGateways',variables('appGwName'))]",
-    "appGwSubnetName": "[concat(uniqueString(resourceGroup().id),'appGwSubnet')]",
-    "appGwSubnetPrefix": "10.0.1.0/24",
-    "appGwSubnetID": "[concat(variables('virtualNetworkID'),'/subnets/',variables('appGwSubnetName'))]",
+    "appGwSubnetID": "[concat(variables('virtualNetworkID'),'/subnets/',parameters('SubnetName'))]",
     "appGwFrontendPort": 80,
     "appGwBackendPort": 80,
     "appGwBePoolName": "[concat(uniqueString(resourceGroup().id), 'appGwBepool')]",
-    "networkApiVersion": "2016-03-30",
+    "networkApiVersion": "2016-03-30"
   },
   "resources": [
     {
@@ -59,7 +45,7 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "[variables('networkApiVersion')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
         "[concat('Microsoft.Network/publicIPAddresses/', variables('appGwPublicIPAddressName'))]"
       ],
       "properties": {
