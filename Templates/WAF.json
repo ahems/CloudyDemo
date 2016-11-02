@@ -18,7 +18,7 @@
     }
     },
   "variables": {
-    "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
+    "virtualNetworkID": "[concat(resourceGroup().id, '/providers/Microsoft.Network/virtualNetworks/',parameters('virtualNetworkName'))]",
     "appGwPublicIPAddressName": "[concat(uniqueString(resourceGroup().id), 'appGwPip')]",
     "appGwName": "[concat(uniqueString(resourceGroup().id), 'appGw')]",
     "appGwPublicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('appGwPublicIPAddressName'))]",

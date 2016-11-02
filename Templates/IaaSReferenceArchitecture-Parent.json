@@ -24,7 +24,7 @@
     }
   },
   "variables": {
-    "virtualNetworkName": "[concat(substring(uniqueString(resourceGroup().id),0,9),'vnet')]",
+    "virtualNetworkName": "[substring(uniqueString(resourceGroup().id),0,9)]",
     "NetworkTemplateUri" :    "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/vnet.json",
     "DataTierTemplateUri" :   "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/DataTier.json",
     "WebTierTemplateUri" :    "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/WebTier.json",
@@ -121,7 +121,7 @@
      "name": "WAF", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork"
+        "Microsoft.Resources/deployments/VirtualNetwork",
       ], 
      "properties": { 
        "mode": "incremental", 
