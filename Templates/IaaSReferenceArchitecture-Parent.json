@@ -130,8 +130,7 @@
           "contentVersion": "1.0.0.0"
        }, 
        "parameters": { 
-          "virtualNetworkName": { "value": "[variables('virtualNetworkName')]" },
-          "SubnetName": "FrontEndSubnet" 
+          "virtualNetworkName": { "value": "[variables('virtualNetworkName')]" }
        }
      }
   },
