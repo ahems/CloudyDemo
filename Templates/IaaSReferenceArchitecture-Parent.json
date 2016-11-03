@@ -38,20 +38,7 @@
     "SecuritySubnetPrefix" : "10.0.3.0/24",
     "GatewaySubnetPrefix" : "10.0.4.0/24"
   },
-  "resources": [
-      {
-      "type": "Microsoft.Storage/storageAccounts",
-      "name": "[uniqueString(resourceGroup().id)]",
-      "apiVersion": "2015-05-01-preview",
-      "location": "[resourceGroup().location]",
-      "tags": {
-				  "DeploymentVersion": "[parameters('DeploymentVersion')]",
-           "UniqueId" : "[uniqueString(resourceGroup().id)]"
-        },
-        "properties": {
-        "accountType": "Standard_LRS"        
-      }
-    },
+  "resources": [      
     { 
      "apiVersion": "2015-01-01", 
      "name": "VirtualNetwork", 
@@ -79,6 +66,7 @@
      "name": "DataTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
+        "Microsoft.Resources/deployments/SecurityTier",
         "Microsoft.Resources/deployments/VirtualNetwork"
         ], 
      "properties": { 

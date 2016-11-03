@@ -6,7 +6,8 @@
             "type": "string",
             "metadata": {
                 "description": "The public DNS name label for the service.  The pattern will follow: <domainNamePrefix>.<region>.cloudapp.azure.com"
-            }
+            },
+            "defaultValue": "[concat('b',uniqueString(resourceGroup().id))]"
         },
         "vmSku": {
             "type": "string",
@@ -35,7 +36,8 @@
             "metadata": {
                 "description": "String used as a base for naming resources (9 characters or less)."
             },
-            "maxLength": 9
+            "maxLength": 9,
+            "defaultValue": "webtier"
         },
         "instanceCount": {
             "type": "int",
@@ -49,7 +51,8 @@
             "type": "string",
             "metadata": {
                 "description": "Admin username on all VMs."
-            }
+            },
+            "defaultValue": "LordAndMaster"
         },
         "adminPassword": {
             "type": "securestring",
@@ -64,7 +67,7 @@
             }
         },
         "registrationUrl": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Registration url of the Azure Automation DSC pull/reporting server"
             }
@@ -151,8 +154,9 @@
         "virtualNetworkName": {
           "type": "string",
           "metadata": {
-            "description": "Existing Virtual Network"
-            }
+            "description": "Name of Existing Virtual Network"
+            },
+            "defaultValue": "[uniqueString(resourceGroup().id)]"
         },
         "subNetName": {
           "type": "string",
@@ -165,7 +169,8 @@
           "type": "string",
           "metadata": {
             "description": "Existing Diagnostics Storage Account Name"
-            }
+            },
+            "defaultValue": "[concat('webtier',uniqueString(resourceGroup().id),'diag')]"
         },
         "DeploymentVersion" : {
         "type": "string",
@@ -184,19 +189,19 @@
         "storageAccountType": "[parameters('storageAccountType')]",
         "saCount": "[parameters('instanceCount')]",
         "uniqueStringArray": [
-            "[concat(parameters('vmssName'), '0')]",
-            "[concat(parameters('vmssName'), '1')]",
-            "[concat(parameters('vmssName'), '2')]",
-            "[concat(parameters('vmssName'), '3')]",
-            "[concat(parameters('vmssName'), '4')]"
+            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '0')]",
+            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '1')]",
+            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '2')]",
+            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '3')]",
+            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '4')]"
         ],
         "vhdContainerName": "[concat(parameters('vmssName'), 'vhd')]",
         "osDiskName": "[concat(parameters('vmssName'), 'osdisk')]",
         "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks/',parameters('virtualNetworkName'))]",
         "subnetID": "[concat(variables('virtualNetworkID'),'/subnets/',parameters('subnetName'))]",
-        "publicIPAddressName": "[concat(parameters('vmssName'), 'pip')]",
+        "publicIPAddressName": "[concat('webtier-ilb-pip-',uniqueString(resourceGroup().id))]",
         "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses/',variables('publicIPAddressName'))]",
-        "loadBalancerName": "[concat(parameters('vmssName'), 'webtierlb')]",
+        "loadBalancerName": "[concat('webtier-ilb-',uniqueString(resourceGroup().id))]",
         "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers/',variables('loadBalancerName'))]",
         "frontendIPConfigurationsName": "[concat(variables('loadBalancerName'), 'frontendIPConfigurations')]",
         "frontEndIPConfigurationsID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/',variables('frontendIPConfigurationsName'))]",
@@ -216,7 +221,7 @@
         "natWinRMStartPort":51000,
         "natWinRMEndPort":51119,
         "natWinRMBackendPort":5896,
-        "nicName": "[concat(parameters('vmssName'), 'nic')]",
+        "nicName": "[concat(parameters('vmssName'), '-nic')]",
         "ipConfigName": "[concat(parameters('vmssName'), 'ipconfig')]",
         "osType": {
             "publisher": "MicrosoftWindowsServer",
@@ -237,6 +242,19 @@
 		"wadcfgxend": "[concat('\"><MetricAggregation scheduledTransferPeriod=\"PT1H\"/><MetricAggregation scheduledTransferPeriod=\"PT1M\"/></Metrics></DiagnosticMonitorConfiguration></WadCfg>')]"
     },
     "resources": [
+      {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[concat('webtier',uniqueString(resourceGroup().id),'diag')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "tags": {
+				  "DeploymentVersion": "[parameters('DeploymentVersion')]",
+           "UniqueId" : "[uniqueString(resourceGroup().id)]"
+        },
+        "properties": {
+        "accountType": "Standard_LRS"        
+       }
+      },
       {
         "type": "Microsoft.Storage/storageAccounts",
         "name": "[concat(variables('uniqueStringArray')[copyIndex()])]",
@@ -374,8 +392,8 @@
           "capacity": "[parameters('instanceCount')]"
         },
         "tags": {
-				"DeploymentVersion": "[parameters('DeploymentVersion')]",
-                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+				  "DeploymentVersion": "[parameters('DeploymentVersion')]",
+          "UniqueId" : "[uniqueString(resourceGroup().id)]"
         },
         "properties": {
           "overprovision": "true",

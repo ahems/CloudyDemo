@@ -6,7 +6,8 @@
       "type": "string",
       "metadata": {
         "description": "The name of the new storage account created to store the VMs disks"
-      }
+      },
+      "defaultValue": "[substring(concat('securitytier',uniqueString(resourceGroup().id)),0,24)]"
     },
     "storageAccountType": {
       "type": "string",
@@ -26,7 +27,8 @@
       "type": "string",
       "metadata": {
         "description": "The name of the existing Virtual Network to Use"
-      }
+      },
+      "defaultValue": "[uniqueString(resourceGroup().id)]"
     },
     "adSubnetName": {
       "type": "string",
@@ -40,7 +42,7 @@
       "metadata": {
         "description": "The name of the NIC attached to the new PDC"
       },
-      "defaultValue": "PrimaryDomainController"
+      "defaultValue": "[concat('securitytier-pdc-nic-', uniqueString(resourceGroup().id))]"
     },
     "adPDCNicIPAddress": {
       "type": "string",
@@ -54,7 +56,7 @@
       "metadata": {
         "description": "The name of the NIC attached to the new BDC"
       },
-      "defaultValue": "SecondaryDomainController"
+      "defaultValue": "[concat('securitytier-bdc-nic-', uniqueString(resourceGroup().id))]"
     },
     "adBDCNicIPAddress": {
       "type": "string",
@@ -68,7 +70,7 @@
       "metadata": {
         "description": "The name of the public IP address used by the Load Balancer"
       },
-      "defaultValue": "adpublicIP"
+      "defaultValue": "[concat('securitytier-ad-ilb-pip-', uniqueString(resourceGroup().id))]"
     },
     "publicIPAddressType": {
       "type": "string",
@@ -86,20 +88,21 @@
       "metadata": {
         "description": "The computer name of the PDC"
       },
-      "defaultValue": "PDC"
+      "defaultValue": "[concat(substring(uniqueString(resourceGroup().id),0,11),'-PDC')]"
     },
     "adBDCVMName": {
       "type": "string",
       "metadata": {
         "description": "The computer name of the BDC"
       },
-      "defaultValue": "BDC"
+      "defaultValue": "[concat(substring(uniqueString(resourceGroup().id),0,11),'-BDC')]"
     },
     "adminUsername": {
       "type": "string",
       "metadata": {
         "description": "The name of the Administrator of the new VM and Domain"
-      }
+      },
+      "defaultValue": "LordAndMaster"
     },
     "adminPassword": {
       "type": "securestring",
@@ -148,19 +151,21 @@
       "metadata": {
         "description": "The name of the availability set that the AD VM is created in"
       },
-      "defaultValue": "ActiveDirectoryAvailabiltySet"
+      "defaultValue": "[concat('securitytier-ad-as-', uniqueString(resourceGroup().id))]"
     },
     "domainName": {
       "type": "string",
       "metadata": {
-        "description": "The FQDN of the AD Domain created "
-      }
+        "description": "The FQDN of the AD Domain created"
+      },
+      "defaultValue": "[concat('a',uniqueString(resourceGroup().id),'.cloudydemos.com')]"    
     },
     "dnsPrefix": {
       "type": "string",
       "metadata": {
         "description": "The DNS prefix for the public IP address used by the Load Balancer"
-      }
+      },
+      "defaultValue": "[concat('a',uniqueString(resourceGroup().id))]"
     },
     "pdcRDPPort": {
       "type": "int",
@@ -198,7 +203,7 @@
     "adBDCRDPNAT": "adBDCRDP",
     "VnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
     "adSubnetRef": "[concat(variables('VnetID'),'/subnets/',parameters('adSubnetName'))]",
-    "adLBName": "adLoadBalancer",
+    "adLBName": "[concat('securitytier-ad-ilb-', uniqueString(resourceGroup().id))]",
     "adlbID": "[resourceId('Microsoft.Network/loadBalancers',variables('adLBName'))]",
     "adlbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('adLBFE'))]",
     "adPDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('adPDCRDPNAT'))]",

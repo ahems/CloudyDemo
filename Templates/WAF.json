@@ -5,9 +5,9 @@
   "virtualNetworkName": {
       "type": "string",
       "metadata": {
-        "description": "The name of the Virtual Network to Create"
+        "description": "The name of the Virtual Network to Use"
       },
-      "defaultValue": "adVNET"
+      "defaultValue": "[uniqueString(resourceGroup().id)]"
     },
     "SubnetName": {
       "type": "string",
@@ -19,14 +19,14 @@
     },
   "variables": {
     "virtualNetworkID": "[concat(resourceGroup().id, '/providers/Microsoft.Network/virtualNetworks/',parameters('virtualNetworkName'))]",
-    "appGwPublicIPAddressName": "[concat(uniqueString(resourceGroup().id), 'appGwPip')]",
-    "appGwName": "[concat(uniqueString(resourceGroup().id), 'appGw')]",
+    "appGwPublicIPAddressName": "[concat('webtier-gw-pip-', uniqueString(resourceGroup().id))]",
+    "appGwName": "[concat('webtier-gw-', uniqueString(resourceGroup().id))]",
     "appGwPublicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('appGwPublicIPAddressName'))]",
     "appGwID": "[resourceId('Microsoft.Network/applicationGateways',variables('appGwName'))]",
     "appGwSubnetID": "[concat(variables('virtualNetworkID'),'/subnets/',parameters('SubnetName'))]",
     "appGwFrontendPort": 80,
     "appGwBackendPort": 80,
-    "appGwBePoolName": "[concat(uniqueString(resourceGroup().id), 'appGwBepool')]",
+    "appGwBePoolName": "[uniqueString(resourceGroup().id)]",
     "networkApiVersion": "2016-03-30"
   },
   "resources": [
@@ -45,7 +45,6 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "[variables('networkApiVersion')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
         "[concat('Microsoft.Network/publicIPAddresses/', variables('appGwPublicIPAddressName'))]"
       ],
       "properties": {
@@ -114,7 +113,7 @@
         ],
         "requestRoutingRules": [
           {
-            "Name": "rule1",
+            "Name": "routeHTTP",
             "properties": {
               "RuleType": "Basic",
               "httpListener": {
