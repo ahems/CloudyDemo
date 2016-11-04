@@ -127,8 +127,7 @@
      "name": "WebTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork",
-        "[concat('Microsoft.Storage/storageAccounts/', uniqueString(resourceGroup().id))]"
+        "Microsoft.Resources/deployments/VirtualNetwork"
       ], 
      "properties": { 
        "mode": "incremental", 
@@ -178,8 +177,7 @@
      "name": "MiddleTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork",
-        "[concat('Microsoft.Storage/storageAccounts/', uniqueString(resourceGroup().id))]"
+        "Microsoft.Resources/deployments/VirtualNetwork"
       ], 
      "properties": { 
        "mode": "incremental", 
@@ -201,8 +199,7 @@
      "name": "SecurityTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork",
-        "[concat('Microsoft.Storage/storageAccounts/', uniqueString(resourceGroup().id))]"
+        "Microsoft.Resources/deployments/VirtualNetwork"
       ],
      "properties": { 
        "mode": "incremental", 
