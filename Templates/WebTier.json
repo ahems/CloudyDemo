@@ -170,7 +170,7 @@
           "metadata": {
             "description": "Existing Diagnostics Storage Account Name"
             },
-            "defaultValue": "[concat('webtier',uniqueString(resourceGroup().id),'diag')]"
+            "defaultValue": "[concat(uniqueString(resourceGroup().id),'diags')]"
         },
         "DeploymentVersion" : {
         "type": "string",
@@ -185,8 +185,7 @@
         "networkApi": "2016-03-30",
         "storageApi": "2015-06-15",
         "insightsApi": "2015-04-01",
-        "automationApiVersion": "2015-10-31",
-        "storageAccountType": "[parameters('storageAccountType')]",
+         "storageAccountType": "[parameters('storageAccountType')]",
         "saCount": "[parameters('instanceCount')]",
         "uniqueStringArray": [
             "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '0')]",
@@ -244,7 +243,7 @@
     "resources": [
       {
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "[concat('webtier',uniqueString(resourceGroup().id),'diag')]",
+      "name": "[concat(uniqueString(resourceGroup().id),'diags')]",
       "apiVersion": "2015-05-01-preview",
       "location": "[resourceGroup().location]",
       "tags": {
@@ -265,8 +264,8 @@
           "count": "[variables('saCount')]"
         },
         "tags": {
-				"DeploymentVersion": "[parameters('DeploymentVersion')]",
-                "UniqueId" : "[uniqueString(resourceGroup().id)]"
+				  "DeploymentVersion": "[parameters('DeploymentVersion')]",
+          "UniqueId" : "[uniqueString(resourceGroup().id)]"
         },
         "properties": {
           "accountType": "[variables('storageAccountType')]"
@@ -501,10 +500,10 @@
                     "autoUpgradeMinorVersion": true,
                     "settings": {
                       "xmlCfg": "[base64(concat(variables('wadcfgxstart'),variables('wadmetricsresourceid'),variables('wadcfgxend')))]",
-                      "storageAccount": "[parameters('vmssName')]"
+                      "storageAccount": "[concat(uniqueString(resourceGroup().id),'diags')]"
                     },
                     "protectedSettings": {
-                      "storageAccountName": "[parameters('vmssName')]",
+                      "storageAccountName": "[concat(uniqueString(resourceGroup().id),'diags')]",
                       "storageAccountKey": "[listkeys(variables('accountid'), '2015-06-15').key1]",
                       "storageAccountEndPoint": "https://core.windows.net"
                     }
@@ -530,6 +529,11 @@
                           "subnet": {
                             "id": "[variables('subnetID')]"
                           },
+                          "ApplicationGatewayBackendAddressPools": [
+                          {
+                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/applicationGateways/', 'webtier-gw-', uniqueString(resourceGroup().id), '/backendAddressPools/', uniqueString(resourceGroup().id))]"
+                          }
+                        ],
                           "loadBalancerBackendAddressPools": [
                             {
                               "id": "[variables('backendAddressPoolID')]"
@@ -582,7 +586,7 @@
                   "metricTrigger": {
                     "metricName": "\\Processor(_Total)\\% Processor Time",
                     "metricNamespace": "",
-                    "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', variables('namingInfix'))]",
+                    "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName'))]",
                     "timeGrain": "PT1M",
                     "statistic": "Average",
                     "timeWindow": "PT5M",
@@ -602,7 +606,7 @@
                   "metricTrigger": {
                     "metricName": "\\Processor(_Total)\\% Processor Time",
                     "metricNamespace": "",
-                    "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', variables('namingInfix'))]",
+                    "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName'))]",
                     "timeGrain": "PT1M",
                     "statistic": "Average",
                     "timeWindow": "PT5M",
