@@ -26,14 +26,6 @@ Configuration MyService
 			Protocol = 'TCP'
 			LocalPort = 80
 			DependsOn = '[WindowsFeature]webServer'
-		}
-		cChocoPackageInstaller trivialWeb 
-        {            
-            Name = "trivialweb" 
-            Version = "1.0.0" 
-            Source = “MY-NUGET-V2-SERVER-ADDRESS” 
-            DependsOn = "[cChocoInstaller]installChoco", 
-            "[WindowsFeature]installIIS" 
-        } 
+		}		
 	}
 }
