@@ -74,7 +74,7 @@
       "metadata": {
         "description": "Resource ID of the existing VNET"
       },
-      "defaultValue": "[resourceId('Microsoft.Network/virtualNetworks/',uniqueString(resourceGroup().id))]"
+      "defaultValue": "[resourceId('Microsoft.Network/virtualNetworks', uniqueString(resourceGroup().id))]"
     },
     "existingSqlSubnetName": {
       "type": "string",

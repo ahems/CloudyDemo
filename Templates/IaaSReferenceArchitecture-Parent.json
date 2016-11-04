@@ -98,7 +98,7 @@
           "contentVersion": "1.0.0.0"
        }, 
        "parameters": { 
-          "existingVirtualNetworkId": {"value": "[resourceId(resourceGroup().id, 'Microsoft.Network/virtualNetworks/',variables('virtualNetworkName'))]" },
+          "existingVirtualNetworkId": {"value": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]" },
           "sqlServerServiceAccountUserName" : {"value": "[parameters('adminUsername')]" },
           "sqlServerServiceAccountPassword" : {
             "reference": {
