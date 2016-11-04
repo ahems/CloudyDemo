@@ -566,7 +566,7 @@
           "[concat('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName'))]"
         ],
         "tags": {
-				"DeploymentVersion": "[parameters('DeploymentVersion')]",
+				  "DeploymentVersion": "[parameters('DeploymentVersion')]",
                 "UniqueId" : "[uniqueString(resourceGroup().id)]"
         },
         "properties": {
@@ -592,7 +592,7 @@
                     "timeWindow": "PT5M",
                     "timeAggregation": "Average",
                     "operator": "GreaterThan",
-                    "threshold": 50.0
+                    "threshold": 80.0
                   },
 
                   "scaleAction": {
@@ -612,7 +612,7 @@
                     "timeWindow": "PT5M",
                     "timeAggregation": "Average",
                     "operator": "LessThan",
-                    "threshold": 50.0
+                    "threshold": 30.0
                   },
 
                   "scaleAction": {

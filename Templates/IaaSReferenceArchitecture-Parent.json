@@ -26,6 +26,7 @@
   "variables": {
     "virtualNetworkName": "[substring(uniqueString(resourceGroup().id),0,9)]",
     "NetworkTemplateUri" :    "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/vnet.json",
+    "UpdateNetworkTemplateUri": "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/vnet-dnsupdate.json",
     "DataTierTemplateUri" :   "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/DataTier.json",
     "WebTierTemplateUri" :    "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/WebTier.json",
     "MiddleTierTemplateUri" : "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/MiddleTier.json",
@@ -46,6 +47,25 @@
        "parameters": { 
           "virtualNetworkName": { "value": "[variables('virtualNetworkName')]" },
           "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" }
+       } 
+     } 
+  },
+  { 
+     "apiVersion": "2015-01-01", 
+     "name": "UpdateVirtualNetwork", 
+     "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+        "Microsoft.Resources/deployments/SecurityTier",
+        "Microsoft.Resources/deployments/VirtualNetwork"
+        ], 
+     "properties": { 
+       "mode": "Incremental", 
+       "templateLink": {
+          "uri": "[variables('UpdateNetworkTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+       }, 
+       "parameters": { 
+          "virtualNetworkName": { "value": "[variables('virtualNetworkName')]" }
        } 
      } 
   },

@@ -299,13 +299,7 @@
         "[concat('Microsoft.Network/networkSecurityGroups/', parameters('SecurityNSGName'))]",
         "[concat('Microsoft.Network/networkSecurityGroups/', parameters('DBNSGName'))]"
       ],
-      "properties": {
-        "dhcpOptions": {
-          "dnsServers": [  
-               "10.0.3.4",
-               "10.0.3.5"
-            ]
-        },
+      "properties": {       
         "addressSpace": {
           "addressPrefixes": [
             "[parameters('addressPrefix')]"
