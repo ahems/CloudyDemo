@@ -116,8 +116,7 @@
                 }, 
                 "secretName": "AdministratorPassword" 
                 }
-          },
-          "DeploymentVersion" : { "value": "[parameters('DeploymentVersion')]" }
+          }
        } 
      } 
   },
