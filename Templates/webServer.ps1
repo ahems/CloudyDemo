@@ -1,9 +1,14 @@
 Configuration MyService
 {
-    Import-DSCResource -ModuleName PSDesiredStateConfiguration, xNetworking
+    Import-DSCResource -ModuleName PSDesiredStateConfiguration, xNetworking, cChoco
 	
 	Node webServer
 	{
+		cChocoInstaller installChoco 
+        { 
+            InstallDir = "C:\choco" 
+        }
+
 		WindowsFeature webServer
 		{
 			Ensure = 'Present'
@@ -22,5 +27,13 @@ Configuration MyService
 			LocalPort = 80
 			DependsOn = '[WindowsFeature]webServer'
 		}
+		cChocoPackageInstaller trivialWeb 
+        {            
+            Name = "trivialweb" 
+            Version = "1.0.0" 
+            Source = “MY-NUGET-V2-SERVER-ADDRESS” 
+            DependsOn = "[cChocoInstaller]installChoco", 
+            "[WindowsFeature]installIIS" 
+        } 
 	}
 }
