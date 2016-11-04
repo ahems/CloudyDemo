@@ -6,13 +6,15 @@
       "type": "string",
       "metadata": {
         "description": "The name of the Azure Redis Cache to create."
-      }
+      },
+       "defaultValue": "[uniqueString(resourceGroup().id)]"
     },
     "redisShardCount": {
       "type": "int",
       "metadata": {
         "description": "Number of highly available shards to create in the cluster. Requires Premium SKU. Set to 0 to not set up clustering."
-      }
+      },
+       "defaultValue": 0
     },
     "redisCacheCapacity": {
       "type": "int",
