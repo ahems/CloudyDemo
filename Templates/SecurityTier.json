@@ -233,10 +233,6 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[parameters('publicIPAddressName')]",
       "location": "[resourceGroup().location]",
-       "tags": {
-				"DeploymentVersion": "[parameters('DeploymentVersion')]",
-                "UniqueId" : "[uniqueString(resourceGroup().id)]"
-        },
       "properties": {         
         "publicIPAllocationMethod": "[parameters('publicIPAddressType')]",
         "dnsSettings": {
@@ -249,10 +245,10 @@
       "name": "[parameters('adAvailabilitySetName')]",
       "apiVersion": "2015-05-01-preview",
       "location": "[resourceGroup().location]",
-       "tags": {
-				"DeploymentVersion": "[parameters('DeploymentVersion')]",
-                "UniqueId" : "[uniqueString(resourceGroup().id)]"
-        }     
+      "properties": {
+        "platformFaultDomainCount": 3,
+        "platformUpdateDomainCount": 3
+      }
     },
     {
       "apiVersion": "2015-05-01-preview",
@@ -449,7 +445,7 @@
       },
       "resources": [
         {
-          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "type": "extensions",
           "name": "[concat(parameters('adPDCVMName'),'/CreateADForest')]",
           "apiVersion": "2015-05-01-preview",
           "location": "[resourceGroup().location]",
