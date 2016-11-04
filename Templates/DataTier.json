@@ -72,7 +72,7 @@
     "existingVirtualNetworkId": {
       "type": "string",
       "metadata": {
-        "description": "Resource ID of the existing VNET."
+        "description": "Resource ID of the existing VNET"
       },
       "defaultValue": "[resourceId('Microsoft.Network/virtualNetworks/',uniqueString(resourceGroup().id))]"
     },
