@@ -8,6 +8,48 @@
       "metadata": {
         "description": "This is your Virtual Network"
       }
+    },
+    "addressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "The CIDR address space for this Virtual Network in Azure"
+      }
+    },
+    "FESubnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24",
+      "metadata": {
+        "description": "This is CIDR prefix for the FrontEnd Subnet (WAF Tier)"
+      }
+    },
+    "AppSubnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/24",
+      "metadata": {
+        "description": "This is CIDR prefix for the Application Subnet (Web Tier)"
+      }
+    },
+    "DBSubnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.2.0/24",
+      "metadata": {
+        "description": "This is CIDR prefix for the Database Subnet (Data Tier)"
+      }
+    },
+    "SecuritySubnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.3.0/24",
+      "metadata": {
+        "description": "This is CIDR prefix for the Security Subnet (Security Tier)"
+      }
+    },
+    "GatewaySubnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.4.0/24",
+      "metadata": {
+        "description": "This is CIDR prefix for the Gateway Subnet (for VPN Connectivity)"
+      }
     }
   },
   "resources": [
@@ -15,13 +57,51 @@
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[parameters('virtualNetworkName')]",
+      "location": "[resourceGroup().location]",
       "properties": {
         "dhcpOptions": {
           "dnsServers": [  
                "10.0.3.4",
                "10.0.3.5"
             ]
-        }
+        },
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "FrontEndSubnet",
+            "properties": {
+              "addressPrefix": "[parameters('FESubnetPrefix')]"
+            }
+          },
+          {
+            "name": "WebTierSubnet",
+            "properties": {
+              "addressPrefix": "[parameters('AppSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "SecurityTierSubnet",
+            "properties": {
+              "addressPrefix": "[parameters('SecuritySubnetPrefix')]"
+            }
+          },
+          {
+            "name": "DataTierSubnet",
+            "properties": {
+              "addressPrefix": "[parameters('DBSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "GatewaySubnet",
+            "properties": {
+              "addressPrefix": "[parameters('GatewaySubnetPrefix')]"
+            }
+          }
+        ]
       }
     }
   ]

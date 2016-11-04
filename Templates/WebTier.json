@@ -240,20 +240,7 @@
 		"wadmetricsresourceid": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name ,'/providers/','Microsoft.Compute/virtualMachineScaleSets/',parameters('vmssName'))]",
 		"wadcfgxend": "[concat('\"><MetricAggregation scheduledTransferPeriod=\"PT1H\"/><MetricAggregation scheduledTransferPeriod=\"PT1M\"/></Metrics></DiagnosticMonitorConfiguration></WadCfg>')]"
     },
-    "resources": [
-      {
-      "type": "Microsoft.Storage/storageAccounts",
-      "name": "[concat(uniqueString(resourceGroup().id),'diags')]",
-      "apiVersion": "2015-05-01-preview",
-      "location": "[resourceGroup().location]",
-      "tags": {
-				  "DeploymentVersion": "[parameters('DeploymentVersion')]",
-           "UniqueId" : "[uniqueString(resourceGroup().id)]"
-        },
-        "properties": {
-        "accountType": "Standard_LRS"        
-       }
-      },
+    "resources": [      
       {
         "type": "Microsoft.Storage/storageAccounts",
         "name": "[concat(variables('uniqueStringArray')[copyIndex()])]",

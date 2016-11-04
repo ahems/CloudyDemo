@@ -34,7 +34,20 @@
     "WAFTemplateUri" : "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/WAF.json"
    },
   "resources": [      
-    { 
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[concat(uniqueString(resourceGroup().id),'diags')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "tags": {
+				  "DeploymentVersion": "[parameters('DeploymentVersion')]",
+           "UniqueId" : "[uniqueString(resourceGroup().id)]"
+        },
+        "properties": {
+        "accountType": "Standard_LRS"        
+       }
+      },
+      { 
      "apiVersion": "2015-01-01", 
      "name": "VirtualNetwork", 
      "type": "Microsoft.Resources/deployments", 
@@ -75,7 +88,8 @@
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
         "Microsoft.Resources/deployments/SecurityTier",
-        "Microsoft.Resources/deployments/VirtualNetwork"
+        "Microsoft.Resources/deployments/VirtualNetwork",
+        "[concat('Microsoft.Storage/storageAccounts/',uniqueString(resourceGroup().id),'diags')]"
         ], 
      "properties": { 
        "mode": "Incremental", 
@@ -112,7 +126,8 @@
      "name": "WAF", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork"
+        "Microsoft.Resources/deployments/VirtualNetwork",
+        "[concat('Microsoft.Storage/storageAccounts/',uniqueString(resourceGroup().id),'diags')]"
       ], 
      "properties": { 
        "mode": "Incremental", 
@@ -130,7 +145,8 @@
      "name": "WebTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork"
+        "Microsoft.Resources/deployments/VirtualNetwork",
+        "[concat('Microsoft.Storage/storageAccounts/',uniqueString(resourceGroup().id),'diags')]"
       ], 
      "properties": { 
        "mode": "Incremental", 
@@ -175,7 +191,8 @@
      "name": "MiddleTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork"
+        "Microsoft.Resources/deployments/VirtualNetwork",
+        "[concat('Microsoft.Storage/storageAccounts/',uniqueString(resourceGroup().id),'diags')]"
       ], 
      "properties": { 
        "mode": "Incremental", 
@@ -194,7 +211,8 @@
      "name": "SecurityTier", 
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
-        "Microsoft.Resources/deployments/VirtualNetwork"
+        "Microsoft.Resources/deployments/VirtualNetwork",
+        "[concat('Microsoft.Storage/storageAccounts/',uniqueString(resourceGroup().id),'diags')]"
       ],
      "properties": { 
        "mode": "Incremental", 

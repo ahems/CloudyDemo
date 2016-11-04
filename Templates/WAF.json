@@ -15,7 +15,21 @@
         "description": "The name of the subnet in the existing VNET"
       },
       "defaultValue": "FrontEndSubnet"
-    }
+    },
+        "DiagnosticsStorageAccountName" : {
+          "type": "string",
+          "metadata": {
+            "description": "Existing Diagnostics Storage Account Name"
+            },
+            "defaultValue": "[concat(uniqueString(resourceGroup().id),'diags')]"
+        },
+        "DeploymentVersion" : {
+        "type": "string",
+        "defaultValue": "None Specified",
+        "metadata": {
+            "description" : "What value shall we tag these resources with to indicate what version this is?"
+        }
+      }
     },
   "variables": {
     "virtualNetworkID": "[concat(resourceGroup().id, '/providers/Microsoft.Network/virtualNetworks/',parameters('virtualNetworkName'))]",
@@ -43,9 +57,28 @@
       "type": "Microsoft.Network/applicationGateways",
       "name": "[variables('appGwName')]",
       "location": "[resourceGroup().location]",
+      "tags": {
+				  "DeploymentVersion": "[parameters('DeploymentVersion')]",
+           "UniqueId" : "[uniqueString(resourceGroup().id)]"
+        },
       "apiVersion": "[variables('networkApiVersion')]",
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('appGwPublicIPAddressName'))]"
+      ],
+      "resources": [
+        {
+          "apiVersion": "2015-07-01",
+          "name": "[concat(variables('appGwName'), '/Microsoft.Insights/service')]",
+          "type": "Microsoft.Network/applicationGateways/providers/diagnosticsettings",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Network/applicationGateways/', variables('appGwName'))]"
+          ],
+          "properties": {
+            "status": "ON",
+            "storageAccountName": "[parameters('DiagnosticsStorageAccountName')]"
+          }
+        }
       ],
       "properties": {
         "sku": {
