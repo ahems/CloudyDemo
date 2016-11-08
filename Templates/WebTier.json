@@ -37,7 +37,7 @@
                 "description": "String used as a base for naming resources (9 characters or less)."
             },
             "maxLength": 9,
-            "defaultValue": "[concat('webtier-', uniqueString(resourceGroup().id))]"
+            "defaultValue": "[substring(concat('webtier-', uniqueString(resourceGroup().id)),0,9)]"
         },
         "instanceCount": {
             "type": "int",
