@@ -1,0 +1,92 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {   
+    "adminUsername": {
+      "type": "string",
+      "defaultValue" : "LordAndMaster",
+      "metadata": {
+        "description": "Admin username on all VMs."
+      }
+    },
+     "Password": {
+      "type": "securestring"
+    }
+  },
+  "variables": {
+    "NetworkTemplateUri" :    "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/vnet.json",
+    "UpdateNetworkTemplateUri": "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/vnet-dnsupdate.json",
+    "DataTierTemplateUri" :   "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/DataTier.json",
+    "SecurityTemplateUri" :   "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/SecurityTier.json"
+   },
+  "resources": [      
+    { 
+     "apiVersion": "2015-01-01", 
+     "name": "VirtualNetwork", 
+     "type": "Microsoft.Resources/deployments", 
+     "properties": { 
+       "mode": "Incremental", 
+       "templateLink": {
+          "uri": "[variables('NetworkTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+       } 
+     } 
+  },
+  { 
+     "apiVersion": "2015-01-01", 
+     "name": "UpdateVirtualNetwork", 
+     "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+        "Microsoft.Resources/deployments/SecurityTier",
+        "Microsoft.Resources/deployments/VirtualNetwork"
+        ], 
+     "properties": { 
+       "mode": "Incremental", 
+       "templateLink": {
+          "uri": "[variables('UpdateNetworkTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+       }
+     } 
+  },
+  {
+  "apiVersion": "2015-01-01", 
+     "name": "DataTier", 
+     "type": "Microsoft.Resources/deployments", 
+     "dependsOn": [
+        "Microsoft.Resources/deployments/SecurityTier",
+        "Microsoft.Resources/deployments/UpdateVirtualNetwork"
+        ], 
+     "properties": { 
+       "mode": "Incremental", 
+       "templateLink": {
+          "uri": "[variables('DataTierTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+       }, 
+       "parameters": { 
+          "sqlServerServiceAccountUserName" : {"value": "[parameters('adminUsername')]" },
+          "sqlServerServiceAccountPassword" : { "value": "[parameters('password')]" },
+          "adminUsername": {"value": "[parameters('adminUsername')]" },
+          "adminPassword" : { "value": "[parameters('password')]" }
+       } 
+     } 
+  },
+    {
+  "apiVersion": "2015-01-01", 
+     "name": "SecurityTier", 
+     "type": "Microsoft.Resources/deployments", 
+     "dependsOn": [
+        "Microsoft.Resources/deployments/VirtualNetwork"
+      ],
+     "properties": { 
+       "mode": "Incremental", 
+       "templateLink": {
+          "uri": "[variables('SecurityTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+       }, 
+       "parameters": { 
+          "adminPassword" : { "value": "[parameters('password')]" }
+       } 
+     } 
+  }
+  ]
+}
