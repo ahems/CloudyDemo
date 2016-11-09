@@ -88,7 +88,7 @@
      "type": "Microsoft.Resources/deployments", 
      "dependsOn": [
         "Microsoft.Resources/deployments/SecurityTier",
-        "Microsoft.Resources/deployments/VirtualNetwork",
+        "Microsoft.Resources/deployments/UpdateVirtualNetwork",
         "[concat('Microsoft.Storage/storageAccounts/',uniqueString(resourceGroup().id),'diags')]"
         ], 
      "properties": { 
