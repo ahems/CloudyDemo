@@ -188,11 +188,11 @@
          "storageAccountType": "[parameters('storageAccountType')]",
         "saCount": "[parameters('instanceCount')]",
         "uniqueStringArray": [
-            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '0')]",
-            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '1')]",
-            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '2')]",
-            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '3')]",
-            "[concat(parameters('vmssName'), uniqueString(resourceGroup().id), '4')]"
+            "[concat('webtier', uniqueString(resourceGroup().id), '0')]",
+            "[concat('webtier', uniqueString(resourceGroup().id), '1')]",
+            "[concat('webtier', uniqueString(resourceGroup().id), '2')]",
+            "[concat('webtier', uniqueString(resourceGroup().id), '3')]",
+            "[concat('webtier', uniqueString(resourceGroup().id), '4')]"
         ],
         "vhdContainerName": "[concat(parameters('vmssName'), 'vhd')]",
         "osDiskName": "[concat(parameters('vmssName'), 'osdisk')]",
