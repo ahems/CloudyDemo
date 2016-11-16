@@ -6,10 +6,10 @@ These template deploy a VNET with a web front end (for an Application Gateway), 
 
 0.	Create an Automation Account – make a note of the i) Primary Access Key and ii) URL (under “Properties”)
   00.	Go to Assets, then Modules, do Browse gallery – add cChoco and xNetworking
-  00.	Download this file locally: 'https://github.com/ahems/CloudyDemo/blob/master/Templates/webServer.ps1
+  00.	Download this file locally: https://github.com/ahems/CloudyDemo/blob/master/Templates/webServer.ps1
   00.	Click DSC Configurations, Add – name it and add the file downloaded locally in the previous step 
   00.	Once DSC Configuration has been added, select it and “Compile” it (you don’t need to wait for it)
-0.	Create a new (or re-use an existing) KeyVault – make a note of it’s id from Properties (e.g. ["/subscriptions/1c3e5ae7-4995-4328-9d5d-85758464d44e/resourceGroups/myRg/providers/Microsoft.KeyVault/vaults/MyKeyVault"])
+0.	Create a new (or re-use an existing) KeyVault – make a note of it’s id from Properties (e.g. "/subscriptions/1c3e5ae7-4995-4328-9d5d-85758464d44e/resourceGroups/myRg/providers/Microsoft.KeyVault/vaults/MyKeyVault")
   00.	Create an access Policy to allow all access to Secrets for whomever you want to allow to deploy this template
   00.	Create three secrets (upload options “manual”) with these names:
     000.	AdministratorPassword – make this at least 12 characters, both upper and lower case and at least one special character. A GUID works well
@@ -19,9 +19,9 @@ These template deploy a VNET with a web front end (for an Application Gateway), 
 Once you have completed the above, you are ready to deploy the example from PowerShell ISE like so:
 
 *	Login-AzureRmAccount
-*	$resourceGroupName = "RandyRules"
+*	$resourceGroupName = "MyRg"
 *	New-AzureRmResourceGroup -Name $resourceGroupName -Location "East US"
 *	$NewGUID = [system.guid]::newguid().guid
-*	New-AzureRmResourceGroupDeployment -Verbose -Name $NewGUID -ResourceGroupName $resourceGroupName -TemplateFile "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/IaaSReferenceArchitecture-Parent.json" -ExistingKeyVaultId "/subscriptions/1c3e5ae7-4995-4328-9d5d-85758464d44e/resourceGroups/Randy/providers/Microsoft.KeyVault/vaults/RandysKeyVault"
+*	New-AzureRmResourceGroupDeployment -Verbose -Name $NewGUID -ResourceGroupName $resourceGroupName -TemplateFile "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/IaaSReferenceArchitecture-Parent.json" -ExistingKeyVaultId "/subscriptions/1c3e5ae7-4995-4328-9d5d-85758464d44e/resourceGroups/MyRg/providers/Microsoft.KeyVault/vaults/RandysKeyVault"
 
 It should take about 35 minutes or so. You should see the VM’s for your scaleset appear as Nodes in your Automation Account.
