@@ -25,3 +25,6 @@ Once you have completed the above, you are ready to deploy the example from Powe
 *	New-AzureRmResourceGroupDeployment -Verbose -Name $NewGUID -ResourceGroupName $resourceGroupName -TemplateFile "https://raw.githubusercontent.com/ahems/CloudyDemo/master/Templates/IaaSReferenceArchitecture-Parent.json" -ExistingKeyVaultId "/subscriptions/1c3e5ae7-4995-4328-9d5d-85758464d44e/resourceGroups/MyRg/providers/Microsoft.KeyVault/vaults/RandysKeyVault"
 
 It should take about 35 minutes or so. You should see the VM’s for your scaleset appear as Nodes in your Automation Account.
+
+# Next Steps
+* To Make the Web Servers install your own application, COnsider using Chocolatey: https://docs.microsoft.com/en-us/azure/automation/automation-dsc-cd-chocolatey
