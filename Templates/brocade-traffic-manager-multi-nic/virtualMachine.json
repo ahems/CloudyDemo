@@ -1,0 +1,259 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "skuType": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "clusterName": {
+      "type": "string"
+    },
+    "authenticationType": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "sshPublicKey": {
+      "type": "string"
+    },
+    "sshKeyPath": {
+      "type": "string"
+    },
+    "vmSize": {
+      "type": "string"
+    },
+    "subnetId": {
+      "type": "string"
+    },
+    "virtualMachineScaleSetsApiVersion": {
+      "type": "string"
+    },
+    "loadBalancerBackendPoolId": {
+      "type": "string"
+    },
+    "networkSecurityGroupId": {
+      "type": "string"
+    },
+    "instanceCount": {
+      "type": "int"
+    },
+    "vhdContainers": {
+      "type": "array"
+    },
+    "loadBalancerInboundNatPoolIds": {
+      "type": "array"
+    }
+  },
+  "variables": {
+    "clusterName": "[toLower(parameters('clusterName'))]",
+    "virtualMachineScaleSetName": "[concat(variables('clusterName'),'-vmss')]",
+    "osDiskName": "[concat(variables('clusterName'),'-osdisk')]",
+    "ipConfigName": "[concat(variables('clusterName'),'-ipconfig')]",
+    "osprofile": {
+      "password": {
+        "computerNamePrefix": "[variables('clusterName')]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]"
+      },
+      "sshPublicKey": {
+        "computerNamePrefix": "[variables('clusterName')]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "linuxConfiguration": {
+          "disablePasswordAuthentication": "true",
+          "ssh": {
+            "publicKeys": [
+              {
+                "path": "[parameters('sshKeyPath')]",
+                "keyData": "[parameters('sshPublicKey')]"
+              }
+            ]
+          }
+        }
+      },
+      "both": {
+        "computerNamePrefix": "[variables('clusterName')]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
+        "linuxConfiguration": {
+          "disablePasswordAuthentication": "false",
+          "ssh": {
+            "publicKeys": [
+              {
+                "path": "[parameters('sshKeyPath')]",
+                "keyData": "[parameters('sshPublicKey')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "sku_products": {
+      "stm_dev_byol": "brocade-virtual-traffic-manager",
+      "stm_csp_500_l": "brocade-virtual-traffic-manager",
+      "stm_csp_500_l2": "brocade-virtual-traffic-manager",
+      "stm_csp_500_m1": "brocade-virtual-traffic-manager",
+      "stm_csub_1000_l_64": "brocade-virtual-traffic-manager",
+      "stm_csub_1000_m_64": "brocade-virtual-traffic-manager",
+      "stm_csub_1000_h_64": "brocade-virtual-traffic-manager",
+      "stm_csub_2000_l_64": "brocade-virtual-traffic-manager",
+      "stm_csub_1000_l_saf_64": "brocade-virtual-traffic-manager-with-waf-module",
+      "stm_csub_1000_m_saf_64": "brocade-virtual-traffic-manager-with-waf-module",
+      "stm_csub_1000_h_saf_64": "brocade-virtual-traffic-manager-with-waf-module",
+      "stm_csub_2000_l_saf_64": "brocade-virtual-traffic-manager-with-waf-module",
+      "safpx_csub_1000_64": "brocade-virtual-web-application-firewall"
+    },
+    "imageSkuVtm": "[parameters('skuType')]",
+    "imagePublisherVtm": "brocade_communications",
+    "imageOfferVtm": "[variables('sku_products')[parameters('skuType')]]",
+    "vtmMarketplacePlan": {
+      "name": "[parameters('skuType')]",
+      "publisher": "[variables('imagePublisherVtm')]",
+      "product": "[variables('imageOfferVtm')]"
+    },
+    "imageReferenceVtm": {
+      "publisher": "[variables('imagePublisherVtm')]",
+      "offer": "[variables('imageOfferVtm')]",
+      "sku": "[parameters('skuType')]",
+      "version": "[parameters('version')]"
+    }
+  },
+  "resources": [
+      {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat('traffic-manager-nic', copyindex())]",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nicLoop",
+        "count": 8
+      },
+      "properties": {
+        "ipConfigurations": [
+                    {
+                      "name": "[variables('ipConfigName')]",
+                      "properties": {
+                          "privateIPAllocationMethod": "Dynamic",
+                          "subnet": {
+                          "id": "[parameters('subnetId')]"
+                        },
+                        "loadBalancerBackendAddressPools": [
+                          {
+                            "id": "[parameters('loadBalancerBackendPoolId')]"
+                          }
+                        ],
+                        "loadBalancerInboundNatPools": "[parameters('loadBalancerInboundNatPoolIds')]"
+                      }
+                    }
+                  ],
+                  "networkSecurityGroup": {
+                    "id": "[parameters('networkSecurityGroupId')]"
+                  }
+      }
+    },
+    {
+      "apiVersion": "[parameters('virtualMachineScaleSetsApiVersion')]",
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "[variables('virtualMachineScaleSetName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+          "nicLoop" 
+      ],
+      "sku": {
+        "name": "[parameters('vmSize')]",
+        "tier": "Standard",
+        "capacity": "[parameters('instanceCount')]"
+      },
+      "plan": "[variables('vtmMarketplacePlan')]",
+      "properties": {
+        "overprovision": "false",
+        "upgradePolicy": {
+          "mode": "Manual"
+        },
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "vhdContainers": "[parameters('vhdContainers')]",
+              "name": "[variables('osDiskName')]",
+              "caching": "ReadOnly",
+              "createOption": "FromImage"
+            },
+            "imageReference": "[variables('imageReferenceVtm')]"
+          },
+          "osProfile": "[variables('osprofile')[parameters('authenticationType')]]",
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                  "properties": {
+                      "primary": true
+                  },
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces','traffic-manager-nic1')]"
+              },
+              {
+                  "properties": {
+                      "primary": false
+                  },
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces','traffic-manager-nic2')]"
+              },
+              {
+                  "properties": {
+                      "primary": false
+                  },
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces','traffic-manager-nic3')]"
+              },
+              {
+                  "properties": {
+                      "primary": false
+                  },
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces','traffic-manager-nic4')]"
+              },
+              {
+                  "properties": {
+                      "primary": false
+                  },
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces','traffic-manager-nic5')]"
+              },
+              {
+                  "properties": {
+                      "primary": false
+                  },
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces','traffic-manager-nic6')]"
+              },
+              {
+                  "properties": {
+                      "primary": false
+                  },
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces','traffic-manager-nic7')]"
+              },
+              {
+                  "properties": {
+                      "primary": false
+                  },
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces','traffic-manager-nic8')]"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "virtualMachineScaleSetId": {
+      "value": "[resourceId('Microsoft.Storage/virtualMachineScaleSets',variables('virtualMachineScaleSetName'))]",
+      "type": "string"
+    },
+    "virtualMachineScaleSetName": {
+      "value": "[variables('virtualMachineScaleSetName')]",
+      "type": "string"
+    }
+  }
+}
