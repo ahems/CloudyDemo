@@ -68,7 +68,7 @@
       "resources": [
         {
           "apiVersion": "2015-07-01",
-          "name": "[concat(variables('appGwName'), '-diagnostics')]",
+          "name": "[concat(variables('appGwName'), '/diagnosticsettings')]",
           "type": "Microsoft.Network/applicationGateways/providers/diagnosticsettings",
           "location": "[resourceGroup().location]",
           "dependsOn": [
