@@ -186,7 +186,7 @@
       "metadata": {
         "description": "The location of resources such as templates and DSC modules upon which this script is dependent"
       },
-      "defaultValue": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/active-directory-new-domain-ha-2-dc/nestedtemplates/"
+      "defaultValue": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/active-directory-new-domain-ha-2-dc/"
     },
      "DeploymentVersion" : {
         "type": "string",
@@ -212,10 +212,10 @@
     "adPDCDataDisk": "ADPDCDataDisk",
     "adBDCDataDisk": "ADBDCDataDisk",
     "adDataDiskSize": 128,
-    "nicTemplateUri": "[concat(parameters('assetLocation'),'nic.json')]",
-    "adPDCModulesURL": "[concat(parameters('assetLocation'),'CreateADPDC.ps1.zip')]",
+    "nicTemplateUri": "[concat(parameters('assetLocation'),'nestedtemplates/nic.json')]",
+    "adPDCModulesURL": "[concat(parameters('assetLocation'),'DSC/CreateADPDC.ps1.zip')]",
     "adPDCConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
-    "adBDCModulesURL": "[concat(parameters('assetLocation'),'CreateADBDC.ps1.zip')]",
+    "adBDCModulesURL": "[concat(parameters('assetLocation'),'DSC/CreateADBDC.ps1.zip')]",
     "adBDCConfigurationFunction": "CreateADBDC.ps1\\CreateADBDC"
   },
   "resources": [
