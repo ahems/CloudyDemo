@@ -469,7 +469,7 @@
                                     "settings": {
                                         "clusterEndpoint": "[reference(parameters('clusterName')).clusterEndpoint]",
                                         "nodeTypeRef": "[parameters('vmNodeType0Name')]",
-                                        "dataPath": "E:\\\\SvcFab",
+                                        "dataPath": "F:\\\\SvcFab",
                                         "durabilityLevel": "Bronze",
                                         "certificate": {
                                             "thumbprint": "[parameters('CertificateThumbprint')]",
