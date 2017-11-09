@@ -451,7 +451,8 @@
             "properties": {
                 "overprovision": "[parameters('overProvision')]",
                 "upgradePolicy": {
-                    "mode": "Automatic"
+                    "mode": "Automatic",
+                    "automaticOSUpgrade": "true"
                 },
                 "virtualMachineProfile": {
                     "extensionProfile": {
