@@ -210,7 +210,7 @@
         },
         "vmNodeType0Size": {
             "type": "string",
-            "defaultValue": "Standard_A2_v2"
+            "defaultValue": "Standard_B2ms"
         },
         "internalLBAddress": {
             "type": "string",
