@@ -218,8 +218,8 @@
         }
     },
     "variables": {
-        "vmssApiVersion": "2017-03-30",
-        "lbApiVersion": "2017-06-01",
+        "vmssApiVersion": "2017-12-01",
+        "lbApiVersion": "2017-10-01",
         "storageApiVersion": "2016-01-01",
         "vnetID": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('existingVNetRGName'), '/providers/Microsoft.Network/virtualNetworks/', parameters('existingVNetName'))]",
         "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]",
@@ -252,6 +252,9 @@
             "type": "Microsoft.Network/loadBalancers",
             "name": "[concat('LB','-', parameters('clusterName'),'-',parameters('vmNodeType0Name'))]",
             "location": "[parameters('computeLocation')]",
+            "sku": {
+                "name": "Standard"
+            },
             "dependsOn": [ ],
             "properties": {
                "frontendIPConfigurations": [
@@ -444,6 +447,7 @@
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "name": "[parameters('vmNodeType0Name')]",
             "location": "[parameters('computeLocation')]",
+            "zones": ["1", "2", "3"],
             "dependsOn": [
                 "[concat('Microsoft.Network/loadBalancers/', concat('LB','-', parameters('clusterName'),'-',parameters('vmNodeType0Name')))]",
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('supportStorageAccountName'))]"
