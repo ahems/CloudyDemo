@@ -94,7 +94,7 @@
         },
         "vmImageSku": {
             "type": "string",
-            "defaultValue": "2016-Datacenter-smalldisk"
+            "defaultValue": "2016-Datacenter-with-Containers"
         },
         "vmImageVersion": {
             "type": "string",
