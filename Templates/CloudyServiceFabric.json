@@ -1,6 +1,6 @@
 {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
-    "contentVersion": "1.0.0.0",
+    "contentVersion": "1.1.0.0",
     "parameters": {
         "clusterLocation": {
             "type": "string",
@@ -100,34 +100,6 @@
             "type": "string",
             "defaultValue": "latest"
         },
-        "AuctionSiteFrontEndPort": {
-            "type": "int",
-            "defaultValue": 8080,
-            "metadata": {
-                "description": "Input endpoint for the Auction application to use."
-            }
-        },
-        "AuctionSiteApiPort": {
-            "type": "int",
-            "defaultValue": 8081,
-            "metadata": {
-                "description": "Input endpoint for the Auction API application to use."
-            }
-        },
-        "DemoAppFrontEndPort": {
-            "type": "int",
-            "defaultValue": 8110,
-            "metadata": {
-                "description": "Input endpoint for the Demo application to use."
-            }
-        },
-        "DemoAppApiPort": {
-            "type": "int",
-            "defaultValue": 8111,
-            "metadata": {
-                "description": "Input endpoint for the Demo API application to use."
-            }
-        },
         "SFReverseProxyPort": {
             "type": "int",
             "defaultValue": 19008,
@@ -210,7 +182,7 @@
         },
         "vmNodeType0Size": {
             "type": "string",
-            "defaultValue": "Standard_B2ms"
+            "defaultValue": "Standard_A2_v2"
         },
         "internalLBAddress": {
             "type": "string",
@@ -218,7 +190,7 @@
         }
     },
     "variables": {
-        "vmssApiVersion": "2017-12-01",
+        "vmssApiVersion": "2017-10-30-preview API",
         "lbApiVersion": "2017-10-01",
         "storageApiVersion": "2016-01-01",
         "vnetID": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('existingVNetRGName'), '/providers/Microsoft.Network/virtualNetworks/', parameters('existingVNetName'))]",
@@ -253,7 +225,7 @@
             "name": "[concat('LB','-', parameters('clusterName'),'-',parameters('vmNodeType0Name'))]",
             "location": "[parameters('computeLocation')]",
             "sku": {
-                "name": "Standard"
+                "name": "Basic"
             },
             "dependsOn": [ ],
             "properties": {
@@ -334,43 +306,21 @@
                         }
                     },
                     {
-                        "name": "AuctionSiteFrontEnd",
+                        "name": "WebSiteFrontEnd",
                         "properties": {
                             "backendAddressPool": {
                                 "id": "[variables('lbPoolID0')]"
                             },
-                            "backendPort": "[parameters('AuctionSiteFrontEndPort')]",
+                            "backendPort": 8082,
                             "enableFloatingIP": false,
                             "frontendIPConfiguration": {
                                 "id": "[variables('lbIPConfig0')]"
                             },
-                            "frontendPort": "[parameters('AuctionSiteFrontEndPort')]",
+                            "frontendPort": 80,
                             "idleTimeoutInMinutes": 5,
-                            "probe": {
-                                "id": "[concat(variables('lbID0'),'/probes/AuctionSiteFrontEndProbe')]"
-                            },
                             "protocol": "Tcp"
                         }
-                    },
-                    {
-                        "name": "AuctionSiteApi",
-                        "properties": {
-                            "backendAddressPool": {
-                                "id": "[variables('lbPoolID0')]"
-                            },
-                            "backendPort": "[parameters('AuctionSiteApiPort')]",
-                            "enableFloatingIP": false,
-                            "frontendIPConfiguration": {
-                                "id": "[variables('lbIPConfig0')]"
-                            },
-                            "frontendPort": "[parameters('AuctionSiteApiPort')]",
-                            "idleTimeoutInMinutes": 5,
-                            "probe": {
-                                "id": "[concat(variables('lbID0'),'/probes/AuctionSiteApiProbe')]"
-                            },
-                            "protocol": "Tcp"
-                        }
-                    }                    
+                    }                 
                 ],
                 "probes": [
                     {
@@ -400,27 +350,7 @@
                         "port": "[parameters('SFReverseProxyPort')]",
                         "protocol": "Tcp"
                         }
-                    },
-                    {
-                        "name": "AuctionSiteFrontEndProbe",
-                        "properties": {
-                            "intervalInSeconds": 5,
-                            "numberOfProbes": 2,
-                            "port": "[parameters('AuctionSiteFrontEndPort')]",
-                            "protocol": "Http",
-                            "requestPath": "/"
-                        }
-                    },
-                    {
-                        "name": "AuctionSiteApiProbe",
-                        "properties": {
-                            "intervalInSeconds": 5,
-                            "numberOfProbes": 2,
-                            "port": "[parameters('AuctionSiteApiPort')]",
-                            "protocol": "Http",
-                            "requestPath": "/Rest?jsonrpc={\"jsonrpc\":\"2.0\",\"method\":\"GetAuctionItemsAsync\",\"id\":1688,\"params\":null}"
-                        }
-                    }                    
+                    }                  
                 ],
                 "inboundNatPools": [
                     {
@@ -443,11 +373,13 @@
             }
         },
         {
-            "apiVersion": "[variables('vmssApiVersion')]",
+            "apiVersion": "2017-10-30-preview",
             "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "identity": { 
+                "type": "systemAssigned"
+            },
             "name": "[parameters('vmNodeType0Name')]",
             "location": "[parameters('computeLocation')]",
-            "zones": ["1", "2", "3"],
             "dependsOn": [
                 "[concat('Microsoft.Network/loadBalancers/', concat('LB','-', parameters('clusterName'),'-',parameters('vmNodeType0Name')))]",
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('supportStorageAccountName'))]"
@@ -459,6 +391,8 @@
                     "automaticOSUpgrade": "false"
                 },
                 "virtualMachineProfile": {
+                    "priority": "Low",
+                    "evictionPolicy": "delete",
                     "extensionProfile": {
                         "extensions": [
                             {
@@ -552,7 +486,20 @@
                                   },
                                   "type": "CustomScriptExtension"
                                 }
-                              }
+                              },
+                                   {
+                                        "name": "MSIWindowsExtension",
+                                        "properties": {
+                                            "publisher": "Microsoft.ManagedIdentity",
+                                            "type": "ManagedIdentityExtensionForWindows",
+                                            "typeHandlerVersion": "1.0",
+                                            "autoUpgradeMinorVersion": true,
+                                            "settings": {
+                                                "port": 50342
+                                            },
+                                            "protectedSettings": {}
+                                        }
+                                    }
                         ]
                     },
                     "networkProfile": {
@@ -580,7 +527,8 @@
                                             }
                                         }
                                     ],
-                                    "primary": true
+                                    "primary": true,
+                                    "enableAcceleratedNetworking" : false
                                 }
                             }
                         ]
@@ -611,15 +559,21 @@
                             "version": "[parameters('vmImageVersion')]"
                         },
                         "osDisk": {
-                            "caching": "ReadOnly",
-                            "createOption": "FromImage"
+                            "caching": "ReadWrite",
+                            "createOption": "FromImage",
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            }
                         },
                         "dataDisks": [
                             {
                             "lun": 1,
                             "createOption" : "Empty",
-                            "caching": "ReadOnly",
-                            "diskSizeGB": 32
+                            "caching": "ReadWrite",
+                            "diskSizeGB": 32,
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                              }
                             }
                         ]
                     }
