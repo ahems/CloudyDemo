@@ -128,8 +128,15 @@
             "type": "string",
             "defaultValue": "/subscriptions/a1ff877a-615e-4db7-a1c6-4014f72fcd8c/resourceGroups/cloudydemos/providers/Microsoft.KeyVault/vaults/CloudySecrets",
             "metadata": {
-            "description": "Resource Id of the key vault, is should be in the format of /subscriptions/<Sub ID>/resourceGroups/<Resource group name>/providers/Microsoft.KeyVault/vaults/<vault name>"
+            "description": "Resource Id of the key vault, it should be in the format of /subscriptions/<Sub ID>/resourceGroups/<Resource group name>/providers/Microsoft.KeyVault/vaults/<vault name>"
             }
+        },
+        "keyVaultName" : {
+                "type": "string",
+                "defaultValue": "CloudySecrets",
+                "metadata": {
+                "description": "Name of the key vault."
+                }
         },
         "certificateUrlValue": {
             "type": "string",
@@ -167,7 +174,7 @@
             "metadata": {
                 "description": "Name for the storage account that contains support logs from the cluster"
             }
-        },       
+        },
         "nt0InstanceCount": {
             "type": "int",
             "defaultValue": 5,
@@ -200,7 +207,10 @@
         "lbPoolID0": "[concat(variables('lbID0'),'/backendAddressPools/LoadBalancerBEAddressPool')]",
         "lbProbeID0": "[concat(variables('lbID0'),'/probes/FabricGatewayProbe')]",
         "lbHttpProbeID0": "[concat(variables('lbID0'),'/probes/FabricHttpGatewayProbe')]",
-        "lbNatPoolID0": "[concat(variables('lbID0'),'/inboundNatPools/LoadBalancerBEAddressNatPool')]"
+        "lbNatPoolID0": "[concat(variables('lbID0'),'/inboundNatPools/LoadBalancerBEAddressNatPool')]",
+        "extensionName": "AzureDiskEncryption",
+        "extensionVersion": "2.1",
+        "encryptionOperation": "EnableEncryption"
     },
     "resources": [
         {
@@ -218,7 +228,7 @@
                 "resourceType": "Service Fabric",
                 "clusterName": "[parameters('clusterName')]"
             }
-        },        
+        },
         {
             "apiVersion": "[variables('lbApiVersion')]",
             "type": "Microsoft.Network/loadBalancers",
@@ -320,7 +330,7 @@
                             "idleTimeoutInMinutes": 5,
                             "protocol": "Tcp"
                         }
-                    }                 
+                    }
                 ],
                 "probes": [
                     {
@@ -350,7 +360,7 @@
                         "port": "[parameters('SFReverseProxyPort')]",
                         "protocol": "Tcp"
                         }
-                    }                  
+                    }
                 ],
                 "inboundNatPools": [
                     {
@@ -373,9 +383,9 @@
             }
         },
         {
-            "apiVersion": "2017-10-30-preview",
+            "apiVersion": "2017-12-01",
             "type": "Microsoft.Compute/virtualMachineScaleSets",
-            "identity": { 
+            "identity": {
                 "type": "systemAssigned"
             },
             "name": "[parameters('vmNodeType0Name')]",
@@ -391,10 +401,28 @@
                     "automaticOSUpgrade": "false"
                 },
                 "virtualMachineProfile": {
-                    "priority": "Low",
-                    "evictionPolicy": "delete",
                     "extensionProfile": {
                         "extensions": [
+                            {
+                                "name": "AzureDiskEncryption",
+                                "properties": {
+                                  "publisher": "Microsoft.Azure.Security",
+                                  "type": "ADETest",
+                                  "typeHandlerVersion": "2.2",
+                                  "autoUpgradeMinorVersion": true,
+                                  "forceUpdateTag": "1.0",
+                                  "settings": {
+                                    "EncryptionOperation": "EnableEncryption",
+                                    "KeyVaultURL": "[concat('https://', parameters('keyVaultName'), '.vault.azure.net/')]",
+                                    "KeyVaultResourceId": "[parameters('existingVNetRGName')]",
+                                    "KeyEncryptionKeyURL": "",
+                                    "KekVaultResourceId": "[parameters('sourceVaultValue')]",
+                                    "KeyEncryptionAlgorithm": "RSA-OAEP",
+                                    "VolumeType": "All",
+                                    "ResizeOSDisk" : "false"
+                                  }
+                                }
+                            },
                             {
                                 "name": "[concat(parameters('vmNodeType0Name'),'_ServiceFabricNode')]",
                                 "properties": {
