@@ -402,27 +402,7 @@
                 },
                 "virtualMachineProfile": {
                     "extensionProfile": {
-                        "extensions": [
-                            {
-                                "name": "AzureDiskEncryption",
-                                "properties": {
-                                  "publisher": "Microsoft.Azure.Security",
-                                  "type": "ADETest",
-                                  "typeHandlerVersion": "2.2",
-                                  "autoUpgradeMinorVersion": true,
-                                  "forceUpdateTag": "1.0",
-                                  "settings": {
-                                    "EncryptionOperation": "EnableEncryption",
-                                    "KeyVaultURL": "[concat('https://', parameters('keyVaultName'), '.vault.azure.net/')]",
-                                    "KeyVaultResourceId": "[parameters('existingVNetRGName')]",
-                                    "KeyEncryptionKeyURL": "",
-                                    "KekVaultResourceId": "[parameters('sourceVaultValue')]",
-                                    "KeyEncryptionAlgorithm": "RSA-OAEP",
-                                    "VolumeType": "All",
-                                    "ResizeOSDisk" : "false"
-                                  }
-                                }
-                            },
+                        "extensions": [                            
                             {
                                 "name": "[concat(parameters('vmNodeType0Name'),'_ServiceFabricNode')]",
                                 "properties": {
